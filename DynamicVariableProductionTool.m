@@ -130,72 +130,42 @@ current_year=year(now);
 
 for y = 1:length(years)
     
-    % run the calibration
+    % run the calibration for this year. This will check for existing files
+    % and return process flag indicating whether or not some raw data
+    % should be processed.
     [MODIS_raw_process,NCEP_raw_process,OMI_raw_process]=ProcessRawDataCalibration(overwrite_flag,current_year,years(y),MODIS_vars,NCEP_vars,OMI_vars,store);
     
-    raw_year_MODIS=dataExtractionMODIS()
+    
+    %% MODIS extraction
+    
+    %load Modis
+    %save Modis
+    %clear Modis
     
     
-    
-    raw_year_NCEP=dataExtractionNCEP()
-    raw_year_OMI=dataExtractionOMI()
-    
-    
-    
-    
-    
-    
-    
-    
-    for v=1:length(out_variables)
-        switch out_variables{v}
-            
-            %out_variables={'pressure','relative_humidity','temperature','angstrom_turbidity_b1','angstrom_turbidity_b2','angstrom_exponent_b1','angstrom_turbidity_b2','AOD_broadband','AOD_b1','AOD_b2','lambda_b1','lambda_b2','ozone','nitrogen_dioxide','precipitable_water','ground_albedo'};
-            
-            case 'pressure'
-                %NCEP
-                pressure=1;
-            case 'relative_humidity'
-                %NCEP
-                relative_humidity=1;
-            case 'temperature'
-                %NCEP
-                temperature=1;
-            case 'aerosol_optical_depth'
-                %MODIS
-                angstrom_turbidity_b1=1;
-                angstrom_turbidity_b2=1;
-                angstrom_exponent_b1=1;
-                angstrom_exponent_b2=1;
-                AOD_broadband=1;
-                AOD_b1=1;
-                AOD_b2=1;
-                lambda_b1=1;
-                lambda_b2=1;
-            case 'ozone'
-                %OMI, MODIS, NCEP
-                ozone=1;
-            case 'nitrogen_dioxide'
-                %OMI
-                nitrogen_dioxide=1;
-            case 'precipitable_water'
-                %NCEP, MODIS
-                precipitable_water=1;
-            case 'ground_albedo'
-                ground_albedo=0.3;
-                
-        end
+    %% NCEP extraction
+    for vars=1:length(NCEP_vars)
         
+        %load NCEP var
+        %save NCEP var
+        %clear NCEP var
     end
     
+    %% OMI extraction
+    %load OMI
+    %save OMI
+    %clear OMI
+     
+    
+   
     
     %% Save the data file
-    for s=1:length(out_variables)
-        filename=[store.raw_outputs_store,filesep,out_variables{s},filesep,out_variables{s},'_',num2str(years(y)),'.mat'];
-        
-        save(filename,out_variables{s});
-    end
-    
+%     for s=1:length(out_variables)
+%         filename=[store.raw_outputs_store,filesep,out_variables{s},filesep,out_variables{s},'_',num2str(years(y)),'.mat'];
+%         
+%         save(filename,out_variables{s});
+%     end
+%     
 end
 
 

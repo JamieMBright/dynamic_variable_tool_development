@@ -100,7 +100,7 @@ in_variables={'pressure','relative_humidity','temperature','aerosol_optical_dept
 num_of_data_sources=3;
 MODIS_vars={'aerosol_optical_depth','ozone'};
 NCEP_vars={'pressure','temperature','ozone','precipitable_water','relative_humidity'};
-Aura_vars={'ozone','nitrogen_dioxide'};
+OMI_vars={'ozone','nitrogen_dioxide'};
 
 %% Output variables
 out_variables={'pressure','relative_humidity','temperature','angstrom_turbidity_b1','angstrom_turbidity_b2','angstrom_exponent_b1','angstrom_turbidity_b2','AOD_broadband','AOD_b1','AOD_b2','lambda_b1','lambda_b2','ozone','nitrogen_dioxide','precipitable_water','ground_albedo'};
@@ -131,7 +131,7 @@ current_year=year(now);
 for y = 1:length(years)
     
     % run the calibration
-    [MODIS_raw_process]=ProcessRawDataCalibration(overwrite_flag,current_year,years(y),MODIS_vars,NCEP_vars,OMI_vars,store);
+    [MODIS_raw_process,NCEP_raw_process,OMI_raw_process]=ProcessRawDataCalibration(overwrite_flag,current_year,years(y),MODIS_vars,NCEP_vars,OMI_vars,store);
     
     raw_year_MODIS=dataExtractionMODIS()
     

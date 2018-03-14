@@ -58,7 +58,7 @@ if overwrite_flag==false
             end
         end
     end
-elseif year==current_year
+else
     MODIS_raw_process=ones(1,length(MODIS_vars));
     NCEP_raw_process=ones(1,length(NCEP_vars));
     OMI_raw_process=ones(1,length(OMI_vars));

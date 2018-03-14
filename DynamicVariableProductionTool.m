@@ -93,12 +93,15 @@ init_directory(store.raw_outputs_store);
 % each variable will have a slightly unique extraction and conversion
 % technique. These variable names will be called upon within the main
 % function using a switch(variables) and so this naming convention should
-% not be modified away from 'pressure','temperature',
+% not be modified away from 'pressure','relative_humidity', 'temperature',
 % 'aerosol_optical_depth','ozone','nitrogen_dioxide', 'precipitable_water'.
-variables={'pressure','temperature','aerosol_optical_depth','ozone','nitrogen_dioxide','precipitable_water'};
+in_variables={'pressure','relative_humidity','temperature','aerosol_optical_depth','ozone','nitrogen_dioxide','precipitable_water','ground_albedo'};
+
+%% Output variables
+out_variables={'pressure','relative_humidity','temperature','angstrom_turbidity_b1','angstrom_turbidity_b2','angstrom_exponent_b1','angstrom_turbidity_b2','AOD_broadband','AOD_b1','AOD_b2','lambda_b1','lambda_b2','ozone','nitrogen_dioxide','precipitable_water','ground_albedo'};
 % initialise an output directory for each of the raw variables.
-for v=1:length(variables)
-    directory=[store.raw_outputs_store,filesep,variables{v},filesep];
+for v=1:length(out_variables)
+    directory=[store.raw_outputs_store,filesep,out_variables{v},filesep];
     init_directory(directory);
 end
 
@@ -115,26 +118,63 @@ end
 overwrite_flag=true;
 current_year=year(now);
  
- %% Trigger the raw data production function
+ %% Trigger the main part of the function 
  % This function loops through each of the raw data from the satellite and
  % NWP sources and extracts the usable data that we require.
  % The raw data will then enter a processing stage?
  
   for y = 1:length(years)
-     for v = 1:length(variables)
-         
-     
-         var_struct=main(variables{v},years(y),store);
-         
-         
+     for v = 1:length(in_variables)
+ out_variables={'pressure','relative_humidity','temperature','angstrom_turbidity_b1','angstrom_turbidity_b2','angstrom_exponent_b1','angstrom_turbidity_b2','AOD_broadband','AOD_b1','AOD_b2','lambda_b1','lambda_b2','ozone','nitrogen_dioxide','precipitable_water','ground_albedo'};
         
-     
-     %% Save the data file
-     filename=[store.raw_outputs_store,filesep,variables{v},filesep,'raw_summary_',num2str(years(y)),'.mat'];
-     save(filename,'-struct',var_struct);
+         switch in_variables{v}
+             case 'pressure'
+                 %NCEP
+                 pressure=1;
+             case 'relative_humidity'
+                 %NCEP
+                 relative_humidity=1;
+             case 'temperature'
+                 %NCEP
+                 temperature=1;
+             case 'aerosol_optical_depth'
+                 %MODIS
+                 angstrom_turbidity_b1=1;
+                 angstrom_turbidity_b2=1;
+                 angstrom_exponent_b1=1;
+                 angstrom_exponent_b2=1;
+                 AOD_broadband=1;
+                 AOD_b1=1;
+                 AOD_b2=1;
+                 lambda_b1=1;
+                 lambda_b2=1;
+             case 'ozone'
+                 %OMI, MODIS, NCEP
+                 ozone=1;
+             case 'nitrogen_dioxide'
+                 %OMI
+                 nitrogen_dioxide=1;
+             case 'precipitable_water'
+                 %NCEP, MODIS
+                 precipitable_water=1;
+             case 'ground_albedo'
+                 ground_albedo=0.3;
+                 
+             otherwise
+                 error(['Unrecognised variable at y: ',num2str(years(y)),' and v: ',in_variables{v}])
+         end
+         
+         
      
      
      end
+     
+     %% Save the data file
+     for s=1:length(out_variables)
+     filename=[store.raw_outputs_store,filesep,out_variables{s},filesep,out_variables{s},'_',num2str(years(y)),'.mat'];
+     save(filename,out_variables{s});
+     end
+     
  end
 
 

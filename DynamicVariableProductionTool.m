@@ -44,9 +44,13 @@
 % values are derived, and which are raw data.
 %
 % ========================================================================
-
+%% Preamble
 % Add the directory with all supporting scripts
+clearvars
 addpath([pwd,'/support_scripts'])
+addpath([pwd,'/nctoolbox-master'])
+setup_nctoolbox
+
 
 
 

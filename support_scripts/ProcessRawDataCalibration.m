@@ -18,14 +18,16 @@
 % Decision about whether to perform this year or not
 function [MODIS_raw_process,NCEP_raw_process,OMI_raw_process]=ProcessRawDataCalibration(overwrite_flag,current_year,year,MODIS_vars,NCEP_vars,OMI_vars,store)
 
-
+% if an overwrite is not requested
 if overwrite_flag==false
+    %should this year be the year of analysis, then a process must occur
     if current_year==year
         MODIS_raw_process=ones(1,length(MODIS_vars)).*2;
         NCEP_raw_process=ones(1,length(NCEP_vars)).*2;
         OMI_raw_process=ones(1,length(OMI_vars)).*2;
         
-    else
+    else % else the year is in the past and so the store should be consulted to check for existance
+        %% MODIS
         MODIS_raw_process=zeros(1,length(MODIS_vars));
         for i=1:length(MODIS_vars)
             filename=GetFilename(store,MODIS_vars{i},year);

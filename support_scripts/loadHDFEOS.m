@@ -138,7 +138,6 @@
 %  plotOnMap(latitudes,longitudes,eval(['data.',datafields_to_plot{i}]),units{i},datafields_to_plot{i});%long_name{i})
 % end
 
-
 function [Data,Latitudes,Longitudes,Units,Long_name]=loadHDFEOS(datestr_yyyymmdd,datafields,MODIS_data_store)
 try
 % initialise the sd C API for HDF that exists in matlab
@@ -161,16 +160,6 @@ dir_MYD=[MODIS_data_store,'MYD08_D3',filesep,datestr_yyyymmdd(1:4),filesep,doyst
 file_MYD=dir([dir_MYD,'MYD08_D3.A*']);
 dir_MOD=[MODIS_data_store,'MOD08_D3',filesep,datestr_yyyymmdd(1:4),filesep,doystr,filesep];
 file_MOD=dir([dir_MOD,'MOD08_D3.A',datestr_yyyymmdd(1:4),doystr,'*']);
-
-% monthly files are stored by doy. extract folder numbers and find the
-% nearest month.
-dir_M3_root=[MODIS_data_store,'MOD08_M3',filesep,datestr_yyyymmdd(1:4),filesep];
-dirs_M3=dir(dir_M3_root);
-M3_folders=cell(1,length(dirs_M3)-2);
-for i=3:length(dirs_M3)
-    M3_folders{i-2}=dirs_M3(i).name;
-end
-M3_folders_num=str2double(M3_folders);
 
 % Check the files exist, so long as 1 does, this function will execute
 if ~isempty(file_MYD)
@@ -200,60 +189,6 @@ if ~isempty(file_MOD)
     
 else
     MOD_flag=0;
-end
-if ~isempty(M3_folders_num)
-    M3_flag=1;
-    M3_folder_ind=sum(M3_folders_num<=doy);
-    dir_M3=[dir_M3_root,M3_folders{M3_folder_ind},filesep];
-    file_M3=dir([dir_M3,'MOD08_M3.A',datestr_yyyymmdd(1:4),'*']);
-    if ~isempty(file_M3)
-        filename_M3=[dir_M3,file_M3(1).name];
-    else 
-        M3_flag=0;
-    end
-    try
-        M3ID=matlab.io.hdf4.sd.start(filename_M3);
-        matlab.io.hdf4.sd.close(M3ID);
-    catch err
-        M3_flag=0;
-    end
-    
-else
-    M3_flag=0;
-end
-
-
-%% Load the monthly AOD for gap fill
-if M3_flag==1
-    m3_var='AOD_550_Dark_Target_Deep_Blue_Combined_Mean_Mean';
-    m3ID=matlab.io.hdf4.sd.start(filename_M3);
-    objId_m3=matlab.io.hdf4.sd.nameToIndex(m3ID,m3_var);
-    % establish the SDS ID
-    sdsID_m3=matlab.io.hdf4.sd.select(m3ID,objId_m3);
-    % load the data into memory
-    AOD_monthly=double(matlab.io.hdf4.sd.readData(sdsID_m3));
-    AOD_monthly=AOD_monthly';
-    % Read fill value from the data field.
-    fillvalue_index = matlab.io.hdf4.sd.findAttr(sdsID_m3, '_FillValue');
-    fillvalue=matlab.io.hdf4.sd.readAttr(sdsID_m3, fillvalue_index);
-    % Read scale_factor from the data field.
-    scale_index = matlab.io.hdf4.sd.findAttr(sdsID_m3, 'scale_factor');
-    scale=matlab.io.hdf4.sd.readAttr(sdsID_m3, scale_index);
-    % Read offset from the data field.
-    offset_index = matlab.io.hdf4.sd.findAttr(sdsID_m3, 'add_offset');
-    offset=matlab.io.hdf4.sd.readAttr(sdsID_m3, offset_index);
-    % Read the valid data range from the data field.
-    valid_range_index = matlab.io.hdf4.sd.findAttr(sdsID_m3, 'valid_range');
-    valid_range=matlab.io.hdf4.sd.readAttr(sdsID_m3, valid_range_index);
-    % Replace the fill value with NaN.
-    AOD_monthly(AOD_monthly==fillvalue)=NaN;
-    % Mask values outside of valid_range.
-    AOD_monthly(AOD_monthly<valid_range(1))=NaN;
-    AOD_monthly(AOD_monthly>valid_range(2))=NaN;
-    % Multiply scale and adding offset, the equation is "scale * (data-offset)".
-    AOD_monthly=scale.*(AOD_monthly-offset);
-    data.AOD_monthly=AOD_monthly;    
-    matlab.io.hdf4.sd.close(M3ID);
 end
 
 % % all the MYD and MOD versions have the same data types have identical format
@@ -528,14 +463,10 @@ elseif (MYD_flag==0 && MOD_flag==1) %there was no MYD data
         end
     end
     
-elseif (MYD_flag==0 && MOD_flag==0) %if there were no MYD, MOD, or M3
-    disp([' WARNING: There were no daily or monthly data files for ',datestr_yyyymmdd])
+elseif (MYD_flag==0 && MOD_flag==0) %if there were no MYD or MOD
+    disp([' WARNING: There were no daily data files for ',datestr_yyyymmdd])
     
 end
-
-if M3_flag==0 %if there were no MYD, MOD, or M3
-    disp([' WARNING: There was no monthly data file for ',datestr_yyyymmdd(1:6)])
-end 
 
 %% outputs
 if exist('data','var')

@@ -98,7 +98,7 @@ init_directory(store.raw_outputs_store);
 in_variables={'pressure','relative_humidity','temperature','aerosol_optical_depth','ozone','nitrogen_dioxide','precipitable_water','ground_albedo'};
 % OMI, NCEP, MODIS
 num_of_data_sources=3;
-MODIS_vars={'aerosol_optical_depth','ozone'};
+MODIS_vars={'aerosol_optical_depth','ozone','precipitable_water'};
 NCEP_vars={'pressure','temperature','ozone','precipitable_water','relative_humidity'};
 OMI_vars={'ozone','nitrogen_dioxide'};
 
@@ -132,15 +132,76 @@ for y = 1:length(years)
     
     % run the calibration for this year. This will check for existing files
     % and return process flag indicating whether or not some raw data
-    % should be processed.
+    % should be processed. The binary outputs correspond to the *_vars
+    % variable that lists the type of data needed
     [MODIS_raw_process,NCEP_raw_process,OMI_raw_process]=ProcessRawDataCalibration(overwrite_flag,current_year,years(y),MODIS_vars,NCEP_vars,OMI_vars,store);
     
     
     %% MODIS extraction
+    % MODIS files store a large amount of variables per file, this differes
+    % from NCEP where each variable has its own file. This means that the
+    % variables must all be extracted in a single loading of the files.
     
-    %load Modis
-    %save Modis
-    %clear Modis
+    for var=1:length(MODIS_vars)
+        
+        % Set the MODIS data fields for extraction from each file
+        switch MODIS_vars{var}
+            case 'aerosol_optical_depth'
+                MODIS_datafields={...
+                    'Aerosol_Optical_Depth_Land_Ocean_Mean',...
+                    'Aerosol_Optical_Depth_Land_Mean',...
+                    'Aerosol_Optical_Depth_Average_Ocean_Mean',...
+                    
+                    'Corrected_Optical_Depth_Land_Micron_Levels',...
+                    'Effective_Optical_Depth_Average_Ocean_Micron_Levels',...
+                    'Pressure_Level',...
+                    'Deep_Blue_Single_Scattering_Albedo_Land_Mean',...
+                    'Deep_Blue_Aerosol_Optical_Depth_Land_Micron_Levels',...
+                    'Deep_Blue_Aerosol_Optical_Depth_Land_Mean',...
+                    'Retrieved_Temperature_Profile_Mean'...
+                    };
+                
+            case 'ozone'
+                MODIS_datafields={'Total_Ozone_Mean'};
+                
+            case 'precipitable_water'
+                MODIS_datafields={'Water_Vapor_Near_Infrared_Clear_Mean',...
+                    'Water_Vapor_Near_Infrared_Cloud_Mean',...
+                    'Atmospheric_Water_Vapor_Mean'};
+              
+        end
+    
+    end
+
+    
+    % Convert time into apprpriate format for MODIS - daily files
+    time_datenum_daily=datenum(num2str(years(y)),'yyyy'):datenum(num2str(years(y)+1),'yyyy')-1;
+    time_dayvecs=datevec(time_datenum_daily);
+ 
+    % trigger loadHDFEOS and extract the necessary data to get Angstrom
+    for d = 1:length(time_datenum_daily)
+        % make a a string of the current day
+        datestr_yyyymmdd=datestr(time_datenum_daily(d),'yyyymmdd');
+
+        [data,latitudes_HDF,longitudes_HDF,~,~]=loadHDFEOS(datestr_yyyymmdd,MODIS_datafields,store.MODIS_store);
+        
+        if ~exist('land_mask','var')
+            [LON,LAT]=meshgrid(longitudes_HDF,latitudes_HDF);
+            LAT=reshape(LAT,numel(LAT),1);
+            LON=reshape(LON,numel(LON),1);
+            land_mask=reshape(landmask(LAT,LON),[length(latitudes_HDF),length(longitudes_HDF)]);
+        end
+        
+         
+        % save to MODIS year file
+        
+        
+        % clear the excess data for memory conservation
+        clear data
+    end
+    
+    
+    % derivations for Angstrom and AOD
     
     
     %% NCEP extraction
@@ -155,17 +216,17 @@ for y = 1:length(years)
     %load OMI
     %save OMI
     %clear OMI
-     
     
-   
+    
+    
     
     %% Save the data file
-%     for s=1:length(out_variables)
-%         filename=[store.raw_outputs_store,filesep,out_variables{s},filesep,out_variables{s},'_',num2str(years(y)),'.mat'];
-%         
-%         save(filename,out_variables{s});
-%     end
-%     
+    %     for s=1:length(out_variables)
+    %         filename=[store.raw_outputs_store,filesep,out_variables{s},filesep,out_variables{s},'_',num2str(years(y)),'.mat'];
+    %
+    %         save(filename,out_variables{s});
+    %     end
+    %
 end
 
 

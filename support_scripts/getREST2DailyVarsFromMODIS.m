@@ -90,7 +90,7 @@
 % plot(times,Angstrom_struct_example.AOD(:,1:4),times,Angstrom_struct_example.Alpha(:,1:4),times,Angstrom_struct_example.Beta(:,1:4));
 % legend('AOD','Angstrom Exponent','Angstrom Turbidity')
 
-function REST2_struct=getREST2DailyVars(times,latitudes,longitudes)
+function REST2_struct=getREST2DailyVarsFromMODIS(times,latitudes,longitudes)
 try
     %% initialise the sd C API for HDF that exists in matlab
     import matlab.io.hdf4.*

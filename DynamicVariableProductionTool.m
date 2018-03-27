@@ -143,67 +143,96 @@ for y = 1:length(years)
     % variables must all be extracted in a single loading of the files.
     
     for var=1:length(MODIS_vars)
-        
-        % Set the MODIS data fields for extraction from each file
-        switch MODIS_vars{var}
-            case 'aerosol_optical_depth'
-                MODIS_datafields={...
-                    'Aerosol_Optical_Depth_Land_Ocean_Mean',...
-                    'Aerosol_Optical_Depth_Land_Mean',...
-                    'Aerosol_Optical_Depth_Average_Ocean_Mean',...
+        % if the flag says this variable must be processed, then process.
+        if MODIS_raw_process(var)==1
+            
+            % Convert time into apprpriate format for MODIS - daily files
+            time_datenum_daily=datenum(num2str(years(y)),'yyyy'):datenum(num2str(years(y)+1),'yyyy')-1;
+            time_dayvecs=datevec(time_datenum_daily);
+            
+            % Set the MODIS data fields for extraction from each file
+            switch MODIS_vars{var}
+                case 'aerosol_optical_depth'
+                    MODIS_datafields={...
+                        'Aerosol_Optical_Depth_Land_Ocean_Mean',...
+                        'Aerosol_Optical_Depth_Land_Mean',...
+                        'Aerosol_Optical_Depth_Average_Ocean_Mean',...
+                        'Corrected_Optical_Depth_Land_Micron_Levels',...
+                        'Effective_Optical_Depth_Average_Ocean_Micron_Levels',...
+                        'Pressure_Level',...
+                        'Deep_Blue_Single_Scattering_Albedo_Land_Mean',...
+                        'Deep_Blue_Aerosol_Optical_Depth_Land_Micron_Levels',...
+                        'Deep_Blue_Aerosol_Optical_Depth_Land_Mean',...
+                        'Retrieved_Temperature_Profile_Mean'...
+                        };
                     
-                    'Corrected_Optical_Depth_Land_Micron_Levels',...
-                    'Effective_Optical_Depth_Average_Ocean_Micron_Levels',...
-                    'Pressure_Level',...
-                    'Deep_Blue_Single_Scattering_Albedo_Land_Mean',...
-                    'Deep_Blue_Aerosol_Optical_Depth_Land_Micron_Levels',...
-                    'Deep_Blue_Aerosol_Optical_Depth_Land_Mean',...
-                    'Retrieved_Temperature_Profile_Mean'...
-                    };
+                case 'ozone'
+                    MODIS_datafields={'Total_Ozone_Mean'};
+                    ozone=zeros(180,360,length(time_datenum_daily)).*NaN;
+                    
+                case 'precipitable_water'
+                    MODIS_datafields={'Water_Vapor_Near_Infrared_Clear_Mean',...
+                        'Water_Vapor_Near_Infrared_Cloud_Mean',...
+                        'Atmospheric_Water_Vapor_Mean'};
+                    
+            end
+            
+            
+    
+            % trigger loadHDFEOS and extract the necessary data to get Angstrom
+            % Loop through each day within the year
+            for d = 1:length(time_datenum_daily)
+                % make a a string of the current day
+                datestr_yyyymmdd=datestr(time_datenum_daily(d),'yyyymmdd');
                 
-            case 'ozone'
-                MODIS_datafields={'Total_Ozone_Mean'};
+                % extract the data from MODIS using the date and the datafields
+                [data,latitudes_HDF,longitudes_HDF,~,~]=loadHDFEOS(datestr_yyyymmdd,MODIS_datafields,store.MODIS_store);
                 
-            case 'precipitable_water'
-                MODIS_datafields={'Water_Vapor_Near_Infrared_Clear_Mean',...
-                    'Water_Vapor_Near_Infrared_Cloud_Mean',...
-                    'Atmospheric_Water_Vapor_Mean'};
-              
+                % load up a land_mask should it not already be in memory.
+                if ~exist('land_mask','var')
+                    [LON,LAT]=meshgrid(longitudes_HDF,latitudes_HDF);
+                    LAT=reshape(LAT,numel(LAT),1);
+                    LON=reshape(LON,numel(LON),1);
+                    land_mask=reshape(landmask(LAT,LON),[length(latitudes_HDF),length(longitudes_HDF)]);
+                end
+                
+                % perform the appropriate processing for the MODIS variables
+                switch MODIS_vars{var}
+                    case 'aerosol_optical_depth'
+                        
+                    case 'ozone'
+                        %ozone in its raw state is in Dobson Units (DU). This
+                        %is a unit measurement of trace gas in a vertical
+                        %column through the Earth;s atmosphere. 1 DU is equal
+                        %to the number of molecules needed to create a pure
+                        %layer of ozone 0.1 mm thick at standard pressure.
+                        %Therefore, 300 DU would form 3 mm of pure gas
+                        %(atm-mm).
+                        % The desired format is in atm-cm and so only a simple
+                        % conversion needs to be performed
+                        % 1 atm-cm = 1000 DU
+                        if ~isempty(data)
+                        ozone(:,:,d)=data.Total_Ozone_Mean./1000;
+                        end
+                    case 'precipitable_water'
+                        
+                end
+                
+                
+            end
+            
+            % Save the data to file
+            filename=[store.raw_outputs_store,'ozone',filesep,'ozone_',num2str(years(y)),'.mat'];
+            save(filename,ozone);
+            
+            % clear the excess data for memory conservation
+            clear data ozone aerosol_optical_depth precipitable_water
+            
         end
-    
+        
+        % derivations for Angstrom and AOD
+        
     end
-
-    
-    % Convert time into apprpriate format for MODIS - daily files
-    time_datenum_daily=datenum(num2str(years(y)),'yyyy'):datenum(num2str(years(y)+1),'yyyy')-1;
-    time_dayvecs=datevec(time_datenum_daily);
- 
-    % trigger loadHDFEOS and extract the necessary data to get Angstrom
-    for d = 1:length(time_datenum_daily)
-        % make a a string of the current day
-        datestr_yyyymmdd=datestr(time_datenum_daily(d),'yyyymmdd');
-
-        [data,latitudes_HDF,longitudes_HDF,~,~]=loadHDFEOS(datestr_yyyymmdd,MODIS_datafields,store.MODIS_store);
-        
-        if ~exist('land_mask','var')
-            [LON,LAT]=meshgrid(longitudes_HDF,latitudes_HDF);
-            LAT=reshape(LAT,numel(LAT),1);
-            LON=reshape(LON,numel(LON),1);
-            land_mask=reshape(landmask(LAT,LON),[length(latitudes_HDF),length(longitudes_HDF)]);
-        end
-        
-         
-        % save to MODIS year file
-        
-        
-        % clear the excess data for memory conservation
-        clear data
-    end
-    
-    
-    % derivations for Angstrom and AOD
-    
-    
     %% NCEP extraction
     for vars=1:length(NCEP_vars)
         

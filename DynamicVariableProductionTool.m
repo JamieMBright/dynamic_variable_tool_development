@@ -182,6 +182,7 @@ for y = 1:length(years)
             % trigger loadHDFEOS and extract the necessary data to get Angstrom
             % Loop through each day within the year
             for d = 1:length(time_datenum_daily)
+                disp(num2str(d))
                 % make a a string of the current day
                 datestr_yyyymmdd=datestr(time_datenum_daily(d),'yyyymmdd');
                 
@@ -214,6 +215,7 @@ for y = 1:length(years)
                         if ~isempty(data)
                         ozone(:,:,d)=data.Total_Ozone_Mean./1000;
                         end
+                    
                     case 'precipitable_water'
                         
                 end
@@ -223,7 +225,11 @@ for y = 1:length(years)
             
             % Save the data to file
             filename=[store.raw_outputs_store,'ozone',filesep,'ozone_',num2str(years(y)),'.mat'];
-            save(filename,ozone);
+            save(filename,'ozone');
+            
+            % Make a gif
+            gif_file = 'testAnimated.gif';
+            SaveMapToGIF(gif_file,ozone,latitudes_HDF,longitudes_HDF,'Ozone','atm-cm',time_datenum_daily)
             
             % clear the excess data for memory conservation
             clear data ozone aerosol_optical_depth precipitable_water

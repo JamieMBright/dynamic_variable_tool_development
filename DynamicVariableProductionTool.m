@@ -169,16 +169,20 @@ for y = 1:length(years)
                 case 'ozone'
                     MODIS_datafields={'Total_Ozone_Mean'};
                     ozone=zeros(180,360,length(time_datenum_daily)).*NaN;
+                    units='atm-cm';
+                    long_name='Total Ozone Burden: Mean';
                     
                 case 'precipitable_water'
-                    MODIS_datafields={'Water_Vapor_Near_Infrared_Clear_Mean',...
-                        'Water_Vapor_Near_Infrared_Cloud_Mean',...
-                        'Atmospheric_Water_Vapor_Mean'};
-                    
+                    MODIS_datafields={'Atmospheric_Water_Vapor_Mean'};
+                    %                         'Water_Vapor_Near_Infrared_Clear_Mean',...
+                    %                         'Water_Vapor_Near_Infrared_Cloud_Mean',...
+                    precipitable_water=zeros(180,360,length(time_datenum_daily)).*NaN;
+                    units='cm';
+                    long_name='Precipitable Water Vapor (IR Retrieval) Total Column: Mean';
             end
             
             
-    
+            
             % trigger loadHDFEOS and extract the necessary data to get Angstrom
             % Loop through each day within the year
             for d = 1:length(time_datenum_daily)
@@ -187,19 +191,12 @@ for y = 1:length(years)
                 datestr_yyyymmdd=datestr(time_datenum_daily(d),'yyyymmdd');
                 
                 % extract the data from MODIS using the date and the datafields
-                [data,latitudes_HDF,longitudes_HDF,~,~]=loadHDFEOS(datestr_yyyymmdd,MODIS_datafields,store.MODIS_store);
-                
-                % load up a land_mask should it not already be in memory.
-                if ~exist('land_mask','var')
-                    [LON,LAT]=meshgrid(longitudes_HDF,latitudes_HDF);
-                    LAT=reshape(LAT,numel(LAT),1);
-                    LON=reshape(LON,numel(LON),1);
-                    land_mask=reshape(landmask(LAT,LON),[length(latitudes_HDF),length(longitudes_HDF)]);
-                end
+                [data,latitudes_HDF,longitudes_HDF,units,long_name]=loadHDFEOS(datestr_yyyymmdd,MODIS_datafields,store.MODIS_store);
                 
                 % perform the appropriate processing for the MODIS variables
                 switch MODIS_vars{var}
                     case 'aerosol_optical_depth'
+                        % derivations for Angstrom and AOD
                         
                     case 'ozone'
                         %ozone in its raw state is in Dobson Units (DU). This
@@ -213,30 +210,59 @@ for y = 1:length(years)
                         % conversion needs to be performed
                         % 1 atm-cm = 1000 DU
                         if ~isempty(data)
-                        ozone(:,:,d)=data.Total_Ozone_Mean./1000;
+                            ozone(:,:,d)=data.Total_Ozone_Mean./1000;
                         end
-                    
-                    case 'precipitable_water'
                         
+                    case 'precipitable_water'
+                        % The precipitable water from MODIS is already in
+                        % the desired units of cm, and so no futher
+                        % conversion is required. There is still the
+                        % decision to be made of how to account for the
+                        % different measurements of infrared as well as
+                        % standard atmospheric data. There is the option to
+                        % have the sunglint near IR and also clouded IR.
+                        if ~isempty(data)
+                            pwat_availability=fieldnames(data);
+                            precipitable_water_all=zeros(length(latitudes_HDF),length(longitudes_HDF),length(pwat_availability)).*NaN;
+                            for p=1:length(pwat_availability)
+                                precipitable_water_all(:,:,p)=eval(['data.',pwat_availability{p}]);
+                            end
+                            
+                            % populate the precipitable water variable
+                            if length(size(precipitable_water_all))==3
+                                precipitable_water(:,:,d)=nanmean(precipitable_water_all,3);
+                            else
+                                precipitable_water(:,:,d)=precipitable_water_all;
+                            end
+                        end
                 end
                 
                 
             end
             
-            % Save the data to file
-            filename=[store.raw_outputs_store,'ozone',filesep,'ozone_',num2str(years(y)),'.mat'];
-            save(filename,'ozone');
+            % Gap filling
+            % load up a land_mask should it not already be in memory.
+            if ~exist('land_mask','var')
+                [LON,LAT]=meshgrid(longitudes_HDF,latitudes_HDF);
+                LAT=reshape(LAT,numel(LAT),1);
+                LON=reshape(LON,numel(LON),1);
+                land_mask=reshape(landmask(LAT,LON),[length(latitudes_HDF),length(longitudes_HDF)]);
+            end
             
-            % Make a gif
-            gif_file = 'testAnimated_wDelayTime.gif';
-            SaveMapToGIF(gif_file,ozone,latitudes_HDF,longitudes_HDF,'Ozone','atm-cm',time_datenum_daily)
+            % Save the data to file
+            save_str=MODIS_vars{var};
+            filename=[store.raw_outputs_store,save_str,filesep,save_str,'_',num2str(years(y)),'.mat'];
+            save(filename,save_str);
+            
+            % Make a gif of a single year
+            gif_file = [save_str,'_',num2str(years(y)),'.gif'];
+            SaveMapToGIF(gif_file,eval(save_str),latitudes_HDF,longitudes_HDF,save_str,'atm-cm',time_datenum_daily)
             
             % clear the excess data for memory conservation
-            clear data ozone aerosol_optical_depth precipitable_water
+            clear data ozone aerosol_optical_depth precipitable_water precipitable_water_all
             
         end
         
-        % derivations for Angstrom and AOD
         
     end
     %% NCEP extraction

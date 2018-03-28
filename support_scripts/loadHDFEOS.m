@@ -351,7 +351,7 @@ if MOD_flag==1
             
             % Read units from the data field.
             units_index = matlab.io.hdf4.sd.findAttr(sdsID_MOD, 'units');
-            units{i-2}=matlab.io.hdf4.sd.readAttr(sdsID_MOD, units_index);
+            units{i}=matlab.io.hdf4.sd.readAttr(sdsID_MOD, units_index);
             
             % Read scale_factor from the data field.
             scale_index = matlab.io.hdf4.sd.findAttr(sdsID_MOD, 'scale_factor');

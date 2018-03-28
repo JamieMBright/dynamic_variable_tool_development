@@ -228,7 +228,7 @@ for y = 1:length(years)
             save(filename,'ozone');
             
             % Make a gif
-            gif_file = 'testAnimated.gif';
+            gif_file = 'testAnimated_wDelayTime.gif';
             SaveMapToGIF(gif_file,ozone,latitudes_HDF,longitudes_HDF,'Ozone','atm-cm',time_datenum_daily)
             
             % clear the excess data for memory conservation

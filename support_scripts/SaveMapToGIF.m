@@ -9,8 +9,8 @@ h=figure('Name','GIF','color',[1,1,1],...
     );
 % axis tight manual % this ensures that getframe() returns a consistent size
 for t=1:length(time)
-    disp([num2str(round(1000*t/length(time)/10)),' % complete'])
-    plotOnMap(latitudes,longitudes,squeeze(data(:,:,t)),'surfm',units,var_str,h)
+    disp([num2str(round(1000*t/length(time))/10),' % complete'])
+    plotOnMap(latitudes,longitudes,squeeze(data(:,:,t)),'surfm',units,[var_str,': ',datestr(time(t))],h,[0 0.6])
     
 %     drawnow 
       % Capture the plot as an image 
@@ -19,9 +19,10 @@ for t=1:length(time)
       [imind,cm] = rgb2ind(im,256); 
       % Write to the GIF File 
       if t == 1 
-          imwrite(imind,cm,filename,'gif', 'Loopcount',inf); 
+          imwrite(imind,cm,filename,'gif', 'Loopcount',inf,'DelayTime',1/20); 
       else 
-          imwrite(imind,cm,filename,'gif','WriteMode','append'); 
+          imwrite(imind,cm,filename,'gif','WriteMode','append','DelayTime',1/20); 
       end 
+      cla(h)
 end
 end

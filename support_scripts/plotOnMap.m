@@ -1,7 +1,7 @@
 % function to plot a global image with boundaries
 %plot_type can be 'surfm' or 'contourfm'. Surfm is considerably faster
 
-function plotOnMap(latitudes,longitudes,data,plot_type,units,name,figure_handle)
+function plotOnMap(latitudes,longitudes,data,plot_type,units,name,figure_handle,clims)
 %% safety
 plot_types={'surfm','contourfm'};
 if ~exist('plot_type','var')
@@ -38,6 +38,10 @@ if [length(latitudes),length(longitudes)]~=[size(data,1),size(data,2)]
     disp(['  ...skipping ',name])
     return
 end
+if ~exist('clims','var')
+    clims='auto';
+end
+   
 
 if ~exist('figure_handle','var')
  figure_handle=figure('Name',name);
@@ -74,6 +78,7 @@ coast = load('coast.mat');
 plotm(coast.lat,coast.long,'k')
 % Put color bar.
 h=colorbar();
+caxis(clims)
 set(get(h, 'title'), 'string', units);
 title(name, 'Interpreter', 'none', 'FontSize', 12, ...
     'FontWeight','bold');

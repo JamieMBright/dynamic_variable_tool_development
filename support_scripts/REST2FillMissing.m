@@ -11,9 +11,9 @@ a=[LAT(data_notnan_inds),LON(data_notnan_inds)];
 b=[LAT(data_nan_inds),LON(data_nan_inds)];
 %find nearest neighbour
 [nearest_inds,dis]=knnsearch(a,b,'k',10);
-dis(dis>20)=NaN;
+dis(dis>4)=NaN;
 % IDW weightings
-weighting=1./(dis.^1.4);
+weighting=1./(dis.^3);
 nan_fill=data(data_notnan_inds(nearest_inds));
 % apply IDW
 missing_data=nansum(nan_fill.*weighting,2)./nansum(weighting,2);
@@ -47,35 +47,35 @@ filled_2D_matrix=data_filled;
 
 
           
-% % %             %% THIS WILL PLOT A PROGRESSION OF THE METHOD THAT FILLS data
-% % %             figure('Name','Progression of gap filling')
-% % %             latlim=[floor(min(min(latitudes_HDF))),ceil(max(max(latitudes_HDF)))];
-% % %             lonlim=[floor(min(min(longitudes_HDF))),ceil(max(max(longitudes_HDF)))];
-% % %             coast = load('coast.mat');
-% % %                         subplot(2,2,1)
-% % %             axesm('MapProjection','eqdcylin','MapLatLimit',latlim,'MapLonLimit',lonlim,'Frame','on','Grid','on','MeridianLabel','on','ParallelLabel','on');
-% % %             contourfm(latitudes_HDF,longitudes_HDF,data_raw,30,'LineStyle','none');
-% % %             plotm(coast.lat,coast.long,'k')
-% % %             h=colorbar();
-% % %             title('Raw Angstrom Exponent')
-% % %                         subplot(2,2,2)
-% % %             axesm('MapProjection','eqdcylin','MapLatLimit',latlim,'MapLonLimit',lonlim,'Frame','on','Grid','on','MeridianLabel','on','ParallelLabel','on');
-% % %             contourfm(latitudes_HDF,longitudes_HDF,data_step_2,30,'LineStyle','none');
-% % %             plotm(coast.lat,coast.long,'k')
-% % %             h=colorbar();
-% % %             title('Land mask IDW (1.4)')
-% % %                         subplot(2,2,3)
-% % %             axesm('MapProjection','eqdcylin','MapLatLimit',latlim,'MapLonLimit',lonlim,'Frame','on','Grid','on','MeridianLabel','on','ParallelLabel','on');
-% % %             contourfm(latitudes_HDF,longitudes_HDF,data_step_3,30,'LineStyle','none');
-% % %             plotm(coast.lat,coast.long,'k')
-% % %             h=colorbar();
-% % %             title('Ocean expansion IDW (5)')
-% % %                         subplot(2,2,4)
-% % %             axesm('MapProjection','eqdcylin','MapLatLimit',latlim,'MapLonLimit',lonlim,'Frame','on','Grid','on','MeridianLabel','on','ParallelLabel','on');
-% % %             contourfm(latitudes_HDF,longitudes_HDF,data_filled,30,'LineStyle','none');
-% % %             plotm(coast.lat,coast.long,'k')
-% % %             h=colorbar();
-% % %             title('Resulting Angstrom Exponent')
-% % %                    
+%             %% THIS WILL PLOT A PROGRESSION OF THE METHOD THAT FILLS data
+%             figure('Name','Progression of gap filling')
+%             latlim=[floor(min(min(latitudes_HDF))),ceil(max(max(latitudes_HDF)))];
+%             lonlim=[floor(min(min(longitudes_HDF))),ceil(max(max(longitudes_HDF)))];
+%             coast = load('coast.mat');
+%                         subplot(2,2,1)
+%             axesm('MapProjection','eqdcylin','MapLatLimit',latlim,'MapLonLimit',lonlim,'Frame','on','Grid','on','MeridianLabel','on','ParallelLabel','on');
+%             surfm(latitudes_HDF,longitudes_HDF,data_raw,30,'LineStyle','none');
+%             plotm(coast.lat,coast.long,'k')
+%             h=colorbar();
+%             title('Raw Angstrom Exponent')
+%                         subplot(2,2,2)
+%             axesm('MapProjection','eqdcylin','MapLatLimit',latlim,'MapLonLimit',lonlim,'Frame','on','Grid','on','MeridianLabel','on','ParallelLabel','on');
+%             surfm(latitudes_HDF,longitudes_HDF,data_step_2,30,'LineStyle','none');
+%             plotm(coast.lat,coast.long,'k')
+%             h=colorbar();
+%             title('Land mask IDW (1.4)')
+%                         subplot(2,2,3)
+%             axesm('MapProjection','eqdcylin','MapLatLimit',latlim,'MapLonLimit',lonlim,'Frame','on','Grid','on','MeridianLabel','on','ParallelLabel','on');
+%             surfm(latitudes_HDF,longitudes_HDF,data_step_3,30,'LineStyle','none');
+%             plotm(coast.lat,coast.long,'k')
+%             h=colorbar();
+%             title('Ocean expansion IDW (5)')
+%                         subplot(2,2,4)
+%             axesm('MapProjection','eqdcylin','MapLatLimit',latlim,'MapLonLimit',lonlim,'Frame','on','Grid','on','MeridianLabel','on','ParallelLabel','on');
+%             surfm(latitudes_HDF,longitudes_HDF,data_filled,30,'LineStyle','none');
+%             plotm(coast.lat,coast.long,'k')
+%             h=colorbar();
+%             title('Resulting Angstrom Exponent')
+%                    
 
 end

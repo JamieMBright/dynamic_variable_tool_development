@@ -103,7 +103,7 @@ NCEP_vars={'pressure','temperature','ozone','precipitable_water','relative_humid
 OMI_vars={'ozone','nitrogen_dioxide'};
 
 %% Output variables
-out_variables={'pressure','relative_humidity','temperature','angstrom_turbidity_b1','angstrom_turbidity_b2','angstrom_exponent_b1','angstrom_turbidity_b2','AOD_broadband','AOD_b1','AOD_b2','lambda_b1','lambda_b2','ozone','nitrogen_dioxide','precipitable_water','ground_albedo'};
+out_variables={'pressure','relative_humidity','temperature','angstrom_turbidity_b1','angstrom_turbidity_b2','angstrom_exponent_b1','angstrom_turbidity_b2','ozone','nitrogen_dioxide','precipitable_water'};%,'AOD_broadband','AOD_b1','AOD_b2','lambda_b1','lambda_b2','ground_albedo'};
 % initialise an output directory for each of the raw variables.
 for v=1:length(out_variables)
     directory=[store.raw_outputs_store,filesep,out_variables{v},filesep];
@@ -175,16 +175,22 @@ for y = 1:length(years)
                         'Deep_Blue_Aerosol_Optical_Depth_Land_Mean',...
                         };
                     
-                    alpha_b1=zeros(180,360,length(time_datenum_daily)).*NaN;
-                    alpha_b2=zeros(180,360,length(time_datenum_daily)).*NaN;
-                    beta_b1=zeros(180,360,length(time_datenum_daily)).*NaN;
-                    beta_b2=zeros(180,360,length(time_datenum_daily)).*NaN;
+                    angstrom_exponent_b1=zeros(180,360,length(time_datenum_daily)).*NaN;
+                    angstrom_exponent_b2=zeros(180,360,length(time_datenum_daily)).*NaN;
+                    angstrom_turbidity_b1=zeros(180,360,length(time_datenum_daily)).*NaN;
+                    angstrom_turbidity_b2=zeros(180,360,length(time_datenum_daily)).*NaN;
+                    
+                    % set the save string
+                    save_str={'angstrom_exponent_b1','angstrom_exponent_b2','angstrom_turbidity_b1','angstrom_turbidity_b2'};
                     
                 case 'ozone'
                     MODIS_datafields={'Total_Ozone_Mean'};
                     ozone=zeros(180,360,length(time_datenum_daily)).*NaN;
                     units='atm-cm';
                     long_name='Total Ozone Burden: Mean';
+                    
+                    % set the save string
+                    save_str={MODIS_vars{var}};
                     
                 case 'precipitable_water'
                     MODIS_datafields={'Atmospheric_Water_Vapor_Mean'};
@@ -193,6 +199,9 @@ for y = 1:length(years)
                     precipitable_water=zeros(180,360,length(time_datenum_daily)).*NaN;
                     units='cm';
                     long_name='Precipitable Water Vapor (IR Retrieval) Total Column: Mean';
+                    
+                    % set the save string
+                    save_str={MODIS_vars{var}};
             end
             
             
@@ -210,13 +219,15 @@ for y = 1:length(years)
                 % perform the appropriate processing for the MODIS variables
                 switch MODIS_vars{var}
                     case 'aerosol_optical_depth'
-                        % derivations for Angstrom and AOD
+                        % derivations for Angstrom and AOD are calculated
+                        % inside the PostProcessing function. Also within
+                        % there are the gapfilling methods
                         if ~isempty(data)
                             [a_b1,a_b2,b_b1,b_b2]=PostProcessingOfModisAOD(data,latitudes_HDF,longitudes_HDF);
-                            alpha_b1(:,:,d)=a_b1;
-                            alpha_b2(:,:,d)=a_b2;
-                            beta_b1(:,:,d)=b_b1;
-                            beta_b2(:,:,d)=b_b2;
+                            angstrom_exponent_b1(:,:,d)=a_b1;
+                            angstrom_exponent_b2(:,:,d)=a_b2;
+                            angstrom_turbidity_b1(:,:,d)=b_b1;
+                            angstrom_turbidity_b2(:,:,d)=b_b2;
                             
                         end     
                        
@@ -232,6 +243,9 @@ for y = 1:length(years)
                         % conversion needs to be performed
                         % 1 atm-cm = 1000 DU
                         if ~isempty(data)
+                            % fill gaps
+                            data.Total_Ozone_Mean=REST2FillMissing(land_mask,longitudes_HDF,latitudes_HDF,data.Total_Ozone_Mean);
+                            %allocate to main variable
                             ozone(:,:,d)=data.Total_Ozone_Mean./1000;
                         end
                         
@@ -252,10 +266,14 @@ for y = 1:length(years)
                             
                             % populate the precipitable water variable
                             if length(size(precipitable_water_all))==3
-                                precipitable_water(:,:,d)=nanmean(precipitable_water_all,3);
+                                
+                                precipitable_water_gap_filled=REST2FillMissing(land_mask,longitudes_HDF,latitudes_HDF,nanmean(precipitable_water_all,3));
                             else
-                                precipitable_water(:,:,d)=precipitable_water_all;
+                                precipitable_water_gap_filled=REST2FillMissing(land_mask,longitudes_HDF,latitudes_HDF,precipitable_water_all);
                             end
+                            
+                            precipitable_water(:,:,d)=precipitable_water_gap_filled;
+                            
                         end
                         
                 end
@@ -266,16 +284,17 @@ for y = 1:length(years)
             
             
             % Save the data to file
-            save_str=MODIS_vars{var};
-            filename=[store.raw_outputs_store,save_str,filesep,save_str,'_',num2str(years(y)),'.mat'];
-            save(filename,save_str);
-            
-            % Make a gif of a single year
-            gif_file = [save_str,'_',num2str(years(y)),'.gif'];
-            SaveMapToGIF(gif_file,eval(save_str),latitudes_HDF,longitudes_HDF,save_str,units,time_datenum_daily)
-            
+            for s=1:length(save_str)
+                filename=[store.raw_outputs_store,save_str{s},filesep,'MODIS_',save_str{s},'_',num2str(years(y)),'.mat'];
+                save(filename,save_str{s});
+                
+                % Make a gif of a single year
+                gif_file = [store.raw_outputs_store,save_str{s},filesep,'MODIS_',save_str{s},'_',num2str(years(y)),'.gif'];
+                SaveMapToGIF(gif_file,eval(save_str{s}),latitudes_HDF,longitudes_HDF,save_str{s},units,time_datenum_daily)
+                
+            end
             % clear the excess data for memory conservation
-            clear data ozone aerosol_optical_depth precipitable_water precipitable_water_all
+            clear data ozone angstrom_exponent_b1 angstrom_exponent_b2 angstrom_turbidity_b1 angstrom_turbidity_b2 precipitable_water precipitable_water_all precipitable_water_gap_filled
             
         end
         

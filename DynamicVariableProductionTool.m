@@ -76,7 +76,7 @@ setup_nctoolbox
 
 %% Define the directories
 % specify the drive
-store.data_drive_root='F:';
+store.data_drive_root=root_dir(1:2);
 % All stores must close with a filesep
 % MODIS store must be a dir that contains MOD08_D3 and MYD08_D3 dirs.
 store.MODIS_store=[store.data_drive_root,filesep];
@@ -103,7 +103,7 @@ NCEP_vars={'pressure','temperature','ozone','precipitable_water','relative_humid
 OMI_vars={'ozone','nitrogen_dioxide'};
 
 %% Output variables
-out_variables={'pressure','relative_humidity','temperature','angstrom_turbidity_b1','angstrom_turbidity_b2','angstrom_exponent_b1','angstrom_turbidity_b2','ozone','nitrogen_dioxide','precipitable_water'};%,'AOD_broadband','AOD_b1','AOD_b2','lambda_b1','lambda_b2','ground_albedo'};
+out_variables={'pressure','relative_humidity','temperature','angstrom_turbidity_b1','angstrom_turbidity_b2','angstrom_exponent_b1','angstrom_exponent_b2','ozone','nitrogen_dioxide','precipitable_water'};%,'AOD_broadband','AOD_b1','AOD_b2','lambda_b1','lambda_b2','ground_albedo'};
 % initialise an output directory for each of the raw variables.
 for v=1:length(out_variables)
     directory=[store.raw_outputs_store,filesep,out_variables{v},filesep];
@@ -123,17 +123,6 @@ years=2002:2018;
 overwrite_flag=true;
 current_year=year(now);
 
-%% Gap filling
-% Gap filling is performed first over land, and then over sea. A land mask
-% is loaded first for indications of where the land is.
-% load up a land_mask should it not already be in memory.
-if ~exist('land_mask','var')
-    [LON,LAT]=meshgrid(longitudes_HDF,latitudes_HDF);
-    LAT=reshape(LAT,numel(LAT),1);
-    LON=reshape(LON,numel(LON),1);
-    land_mask=reshape(landmask(LAT,LON),[length(latitudes_HDF),length(longitudes_HDF)]);
-end
-
 %% Trigger the main part of the function
 % This function loops through each of the raw data from the satellite and
 % NWP sources and extracts the usable data that we require.
@@ -147,7 +136,6 @@ for y = 1:length(years)
     % variable that lists the type of data needed
     [MODIS_raw_process,NCEP_raw_process,OMI_raw_process]=ProcessRawDataCalibration(overwrite_flag,current_year,years(y),MODIS_vars,NCEP_vars,OMI_vars,store);
     
-    
     %% MODIS extraction
     % MODIS files store a large amount of variables per file, this differes
     % from NCEP where each variable has its own file. This means that the
@@ -156,7 +144,7 @@ for y = 1:length(years)
     for var=1:length(MODIS_vars)
         % if the flag says this variable must be processed, then process.
         if MODIS_raw_process(var)==1
-            
+            disp(['Processing ',MODIS_vars{var}]),
             % Convert time into apprpriate format for MODIS - daily files
             time_datenum_daily=datenum(num2str(years(y)),'yyyy'):datenum(num2str(years(y)+1),'yyyy')-1;
             time_dayvecs=datevec(time_datenum_daily);
@@ -179,16 +167,19 @@ for y = 1:length(years)
                     angstrom_exponent_b2=zeros(180,360,length(time_datenum_daily)).*NaN;
                     angstrom_turbidity_b1=zeros(180,360,length(time_datenum_daily)).*NaN;
                     angstrom_turbidity_b2=zeros(180,360,length(time_datenum_daily)).*NaN;
-                    
+                    units={'','','',''};
+                    c_lower=[0 0 0 0];
+                    c_upper=[2.5 2.5 1.1 1.1];                        
                     % set the save string
                     save_str={'angstrom_exponent_b1','angstrom_exponent_b2','angstrom_turbidity_b1','angstrom_turbidity_b2'};
                     
                 case 'ozone'
                     MODIS_datafields={'Total_Ozone_Mean'};
                     ozone=zeros(180,360,length(time_datenum_daily)).*NaN;
-                    units='atm-cm';
+                    units={'atm-cm'};
                     long_name='Total Ozone Burden: Mean';
-                    
+                    c_upper=0.6;
+                    c_lower=0;
                     % set the save string
                     save_str={MODIS_vars{var}};
                     
@@ -197,25 +188,36 @@ for y = 1:length(years)
                     %                         'Water_Vapor_Near_Infrared_Clear_Mean',...
                     %                         'Water_Vapor_Near_Infrared_Cloud_Mean',...
                     precipitable_water=zeros(180,360,length(time_datenum_daily)).*NaN;
-                    units='cm';
+                    units={'cm'};
                     long_name='Precipitable Water Vapor (IR Retrieval) Total Column: Mean';
-                    
+                    c_upper=8;
+                    c_lower=0;
                     % set the save string
                     save_str={MODIS_vars{var}};
             end
             
-            
-            
             % trigger loadHDFEOS and extract the necessary data to get Angstrom
             % Loop through each day within the year
             for d = 1:length(time_datenum_daily)
-                disp(num2str(d))
+                disp(datestr(time_datenum_daily(d)))
                 % make a a string of the current day
                 datestr_yyyymmdd=datestr(time_datenum_daily(d),'yyyymmdd');
                 
                 % extract the data from MODIS using the date and the datafields
-                [data,latitudes_HDF,longitudes_HDF,units,long_name]=loadHDFEOS(datestr_yyyymmdd,MODIS_datafields,store.MODIS_store);
-                
+                [data,latitudes_HDF,longitudes_HDF,~,~]=loadHDFEOS(datestr_yyyymmdd,MODIS_datafields,store.MODIS_store);
+                %% Gap filling
+                % Gap filling is performed first over land, and then over sea. A land mask
+                % is loaded first for indications of where the land is.
+                % load up a land_mask should it not already be in memory.
+                if ~exist('land_mask','var')
+                    try % this will fail if loadHDFEOS fails, however will not be attempted upon first successful completion.
+                        [LON,LAT]=meshgrid(longitudes_HDF,latitudes_HDF);
+                        LAT=reshape(LAT,numel(LAT),1);
+                        LON=reshape(LON,numel(LON),1);
+                        land_mask=reshape(landmask(LAT,LON),[length(latitudes_HDF),length(longitudes_HDF)]);
+                    catch err
+                    end
+                end
                 % perform the appropriate processing for the MODIS variables
                 switch MODIS_vars{var}
                     case 'aerosol_optical_depth'
@@ -223,14 +225,14 @@ for y = 1:length(years)
                         % inside the PostProcessing function. Also within
                         % there are the gapfilling methods
                         if ~isempty(data)
-                            [a_b1,a_b2,b_b1,b_b2]=PostProcessingOfModisAOD(data,latitudes_HDF,longitudes_HDF);
+                            [a_b1,a_b2,b_b1,b_b2]=PostProcessingOfModisAOD(data,latitudes_HDF,longitudes_HDF,land_mask);
                             angstrom_exponent_b1(:,:,d)=a_b1;
                             angstrom_exponent_b2(:,:,d)=a_b2;
                             angstrom_turbidity_b1(:,:,d)=b_b1;
                             angstrom_turbidity_b2(:,:,d)=b_b2;
                             
-                        end     
-                       
+                        end
+                        
                     case 'ozone'
                         %ozone in its raw state is in Dobson Units (DU). This
                         %is a unit measurement of trace gas in a vertical
@@ -290,7 +292,7 @@ for y = 1:length(years)
                 
                 % Make a gif of a single year
                 gif_file = [store.raw_outputs_store,save_str{s},filesep,'MODIS_',save_str{s},'_',num2str(years(y)),'.gif'];
-                SaveMapToGIF(gif_file,eval(save_str{s}),latitudes_HDF,longitudes_HDF,save_str{s},units,time_datenum_daily)
+                SaveMapToGIF(gif_file,eval(save_str{s}),latitudes_HDF,longitudes_HDF,save_str{s},units{s},time_datenum_daily,c_upper(s),c_lower(s))
                 
             end
             % clear the excess data for memory conservation

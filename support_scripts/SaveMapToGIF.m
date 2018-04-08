@@ -1,6 +1,6 @@
 % convert 3D map to a gif
 
-function SaveMapToGIF(filename,data,latitudes,longitudes,var_str,units,time)
+function SaveMapToGIF(filename,data,latitudes,longitudes,var_str,units,time,c_upper,c_lower)
 
 
 h=figure('Name','GIF','color',[1,1,1],...
@@ -10,7 +10,7 @@ h=figure('Name','GIF','color',[1,1,1],...
 % axis tight manual % this ensures that getframe() returns a consistent size
 for t=1:length(time)
     disp([num2str(round(1000*t/length(time))/10),' % complete'])
-    plotOnMap(latitudes,longitudes,squeeze(data(:,:,t)),'surfm',units,[var_str,': ',datestr(time(t))],h,[0 0.6])
+    plotOnMap(latitudes,longitudes,squeeze(data(:,:,t)),'surfm',units,[var_str,': ',datestr(time(t))],h,[c_lower c_upper])
     
 %     drawnow 
       % Capture the plot as an image 

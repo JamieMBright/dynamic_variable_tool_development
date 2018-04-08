@@ -1,4 +1,4 @@
-function [alpha_b1,alpha_b2,beta_b1,beta_b2]=PostProcessingOfModisAOD(data,latitudes_HDF,longitudes_HDF)
+function [alpha_b1,alpha_b2,beta_b1,beta_b2]=PostProcessingOfModisAOD(data,latitudes_HDF,longitudes_HDF,land_mask)
 
 % Angstrom Exponent (alpha)
 % Gueymard 2008, Solar Energy 82 272-285, Table 1 states:
@@ -108,6 +108,14 @@ beta_b2_confidence(~isnan(AOD_b2) & alpha_b2_confidence==1)=1;
 %calculate the Angstrom turbidity
 beta_b1=AOD_b1./(lambda_b1.^(-alpha_b1));
 beta_b2=AOD_b2./(lambda_b2.^(-alpha_b2));
+
+% Limit the alpha values by the REST2 limitations
+% reported as 0<alpha<2.5 (Gueymard, 2008)
+beta_b1(beta_b1<0)=0;
+beta_b1(beta_b1>1.1)=1.1;
+beta_b2(beta_b2<0)=0;
+beta_b2(beta_b2>1.1)=1.1;
+
 
 %         %% write these images to file
 %         %make struct

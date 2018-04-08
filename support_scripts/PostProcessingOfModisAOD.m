@@ -109,6 +109,9 @@ beta_b2_confidence(~isnan(AOD_b2) & alpha_b2_confidence==1)=1;
 beta_b1=AOD_b1./(lambda_b1.^(-alpha_b1));
 beta_b2=AOD_b2./(lambda_b2.^(-alpha_b2));
 
+beta_b1=REST2FillMissing(land_mask,longitudes_HDF,latitudes_HDF,beta_b1);
+beta_b2=REST2FillMissing(land_mask,longitudes_HDF,latitudes_HDF,beta_b2);
+
 % Limit the alpha values by the REST2 limitations
 % reported as 0<alpha<2.5 (Gueymard, 2008)
 beta_b1(beta_b1<0)=0;

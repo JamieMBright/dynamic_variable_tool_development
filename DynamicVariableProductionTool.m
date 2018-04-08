@@ -109,6 +109,9 @@ for v=1:length(out_variables)
     directory=[store.raw_outputs_store,filesep,out_variables{v},filesep];
     init_directory(directory);
 end
+MODIS_prefix='MODIS';
+NCEP_prefix='NCEP';
+OMI_prefix='OMI';
 
 %% Set time requirements
 % A fundamental component to the main function is the year that is
@@ -120,7 +123,7 @@ years=2002:2018;
 % The yearly variable files will be overwritten if the flag is set to true,
 % should the flag be false, the tool will skip this year and variable, with
 % the exception of the current year, whereby new data will be checked for.
-overwrite_flag=true;
+overwrite_flag=false;
 current_year=year(now);
 
 %% Trigger the main part of the function
@@ -134,13 +137,12 @@ for y = 1:length(years)
     % and return process flag indicating whether or not some raw data
     % should be processed. The binary outputs correspond to the *_vars
     % variable that lists the type of data needed
-    [MODIS_raw_process,NCEP_raw_process,OMI_raw_process]=ProcessRawDataCalibration(overwrite_flag,current_year,years(y),MODIS_vars,NCEP_vars,OMI_vars,store);
+    [MODIS_raw_process,NCEP_raw_process,OMI_raw_process]=ProcessRawDataCalibration(overwrite_flag,current_year,years(y),MODIS_vars,NCEP_vars,OMI_vars,store,MODIS_prefix,NCEP_prefix,OMI_prefix);
     
     %% MODIS extraction
     % MODIS files store a large amount of variables per file, this differes
     % from NCEP where each variable has its own file. This means that the
     % variables must all be extracted in a single loading of the files.
-    
     for var=1:length(MODIS_vars)
         % if the flag says this variable must be processed, then process.
         if MODIS_raw_process(var)==1
@@ -287,7 +289,7 @@ for y = 1:length(years)
             
             % Save the data to file
             for s=1:length(save_str)
-                filename=[store.raw_outputs_store,save_str{s},filesep,'MODIS_',save_str{s},'_',num2str(years(y)),'.mat'];
+                filename=GetFilename(store,save_str{s},years(y),MODIS_prefix);
                 save(filename,save_str{s});
                 
                 % Make a gif of a single year
@@ -297,11 +299,9 @@ for y = 1:length(years)
             end
             % clear the excess data for memory conservation
             clear data ozone angstrom_exponent_b1 angstrom_exponent_b2 angstrom_turbidity_b1 angstrom_turbidity_b2 precipitable_water precipitable_water_all precipitable_water_gap_filled
-            
         end
-        
-        
     end
+    
     %% NCEP extraction
     for vars=1:length(NCEP_vars)
         

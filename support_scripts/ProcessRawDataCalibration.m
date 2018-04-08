@@ -16,7 +16,7 @@
 % the whole of the current year, as it will make a check for new data.
 %% MODIS
 % Decision about whether to perform this year or not
-function [MODIS_raw_process,NCEP_raw_process,OMI_raw_process]=ProcessRawDataCalibration(overwrite_flag,current_year,year,MODIS_vars,NCEP_vars,OMI_vars,store)
+function [MODIS_raw_process,NCEP_raw_process,OMI_raw_process]=ProcessRawDataCalibration(overwrite_flag,current_year,year,MODIS_vars,NCEP_vars,OMI_vars,storeMODIS_prefix,NCEP_prefix,OMI_prefix)
 
 % if an overwrite is not requested
 if overwrite_flag==false
@@ -30,18 +30,38 @@ if overwrite_flag==false
         %% MODIS
         MODIS_raw_process=zeros(1,length(MODIS_vars));
         for i=1:length(MODIS_vars)
-            filename=GetFilename(store,MODIS_vars{i},year);
-            % check whether the file exists.
-            if ~exist(filename,'file')
-                %if the file doesnt exist, add a marker in the flag variable.
-                MODIS_raw_process(i)=1;
+            
+            if strcmp(MODIS_vars{i},'aerosol_optical_depth')
+                AOD_vars={'angstrom_exponent_b1','angstrom_exponent_b2','angstrom_turbidity_b1','angstrom_turbidity_b2'};
+                AOD_test=zeros(length(AOD_vars),1);
+                for j=1:length(AOD_vars)
+                    filename=GetFilename(store,AOD_vars{j},year,MODIS_prefix);
+                    % check whether the file exists.
+                    if ~exist(filename,'file')
+                        %if the file doesnt exist, add a marker in the flag variable.
+                        AOD_test(j)=1;
+                    end
+                    
+                end
+                
+                if sum(AOD_test)==length(AOD_test)
+                   MODIS_raw_process(i)=1; 
+                end
+                
+            else
+                filename=GetFilename(store,MODIS_vars{i},year,prefix);
+                % check whether the file exists.
+                if ~exist(filename,'file')s
+                    %if the file doesnt exist, add a marker in the flag variable.
+                    MODIS_raw_process(i)=1;
+                end
             end
         end
         
         %% NCEP
         NCEP_raw_process=zeros(1,length(NCEP_vars));
         for i=1:length(NCEP_vars)
-            filename=GetFilename(store,NCEP_vars{i},year);
+            filename=GetFilename(store,NCEP_vars{i},year,NCEP_prefix);
             % check whether the file exists.
             if ~exist(filename,'file')
                 %if the file doesnt exist, add a marker in the flag variable.
@@ -52,7 +72,7 @@ if overwrite_flag==false
         %% OMI
         OMI_raw_process=zeros(1,length(OMI_vars));
         for i=1:length(OMI_vars)
-            filename=GetFilename(store,OMI_vars{i},year);
+            filename=GetFilename(store,OMI_vars{i},year,OMI_prefix);
             % check whether the file exists.
             if ~exist(filename,'file')
                 %if the file doesnt exist, add a marker in the flag variable.

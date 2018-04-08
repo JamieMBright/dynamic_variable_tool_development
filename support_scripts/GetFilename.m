@@ -3,10 +3,10 @@
 % having a single definition so that it can change overtime with different
 % formats.
 
-function filename=GetFilename(store,raw_data_source_var,year)
+function filename=GetFilename(store,raw_data_source_var,year,prefix)
 
 
-filename=[store.raw_outputs_store,filesep,raw_data_source_var,filesep,raw_data_source_var,'_',num2str(year),'.mat'];
+filename=[store.raw_outputs_store,raw_data_source_var,filesep,prefix,'_',raw_data_source_var,'_',num2str(year),'.mat'];
 
 
 end

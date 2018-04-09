@@ -1,7 +1,7 @@
  for var=1:length(MODIS_vars)
         % if the flag says this variable must be processed, then process.
         if MODIS_raw_process(var)==1
-            disp(['Processing ',MODIS_vars{var}]),
+            disp(['Processing ',MODIS_vars{var}])
             % Convert time into apprpriate format for MODIS - daily files
             time_datenum_daily=datenum(num2str(years(y)),'yyyy'):datenum(num2str(years(y)+1),'yyyy')-1;
             time_dayvecs=datevec(time_datenum_daily);

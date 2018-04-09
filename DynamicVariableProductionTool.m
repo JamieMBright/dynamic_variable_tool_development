@@ -141,36 +141,17 @@ for y = 1:length(years)
     
     %% MODIS extraction
     % MODIS files store a large amount of variables per file, this differes
-    % from NCEP where each variable has its own file. This means that the
+    % from NCEP where each variable has its own file. This means that all
     % variables must all be extracted in a single loading of the files.
     MODISextraction
     
     %% NCEP extraction
-    % Download missing NCEP data files
-    DownloadAllReanalysisData(years,NCEP_vars,store);
-    for vars=1:length(NCEP_vars)
-        
-        
-        
-        %load NCEP var
-        % extract the appropriate data from the NetCDF file
-        nc=ncgeodataset(filepath); %get the reference file using the input date year
-        data=nc{var_name};   %extract the precipitable water column data
-        data=double(data(:)); %remove from object to make matrix workspace
-        lat=nc{'lat'};   %repeat for lat, lon and time
-        lat=double(lat(:));
-        lon=nc{'lon'};
-        lon=double(lon(:));
-        time=nc{'time'}; % take a look at time.attributes - it's hours since 1/1/1800 00:00
-        time=time(:);
-        time=datenum('1800-1-1 00:00')+time./24;  %create datenums of the time
-        
-        %find the time indices for this year
-        [t_ind,~]=knnsearch(time_datenum',time);
-        
-        %save NCEP var
-        %clear NCEP var
-    end
+    % NCEP is stored natively in a single year per file, however, it is not
+    % in the appropriate structure, units, or resolution. Firstly, download
+    % all the native files. Secondly, extract the data and reshape and
+    % interpolate it. Lastly, convert the data to required units before
+    % saving to disk. 
+    NCEPextraction
     
     %% OMI extraction
     %load OMI
@@ -178,15 +159,7 @@ for y = 1:length(years)
     %clear OMI
     
     
-    
-    
-    %% Save the data file
-    %     for s=1:length(out_variables)
-    %         filename=[store.raw_outputs_store,filesep,out_variables{s},filesep,out_variables{s},'_',num2str(years(y)),'.mat'];
-    %
-    %         save(filename,out_variables{s});
-    %     end
-    %
+
 end
 
 

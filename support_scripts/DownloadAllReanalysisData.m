@@ -37,6 +37,7 @@ this_year=year(now);
 url_root='ftp://ftp.cdc.noaa.gov/Datasets/ncep.reanalysis/';
 var_root={'surface/','surface_gauss/','surface/','surface/'};
 var_file={'pres.sfc.','air.2m.gauss.','pr_wtr.eatm.','rhum.sig995.'};
+var_save_name={'pres.sfc.','tamb-','pwat-','rh3-'};
 url_end='.nc';
 file_save_dir=store.NCEP_store;
 var_dirs=NCEP_dirs;
@@ -58,7 +59,7 @@ for i=1:length(list_of_years)
         % make the url name
         url = [url_root,var_root{var},var_file{var},num2str(list_of_years(i)),url_end];
         % make the file save name
-        filename = [file_save_dir,var_dirs{var},'\',var_file{var},num2str(list_of_years(i)),url_end];
+        filename = [file_save_dir,var_dirs{var},'\',var_save_name{var},num2str(list_of_years(i)),url_end];
         % check whether the requested year is not the current year
         if list_of_years(i)~=this_year
             %check if the file already exists

@@ -152,6 +152,6 @@
                 
             end
             % clear the excess data for memory conservation
-            clear data ozone angstrom_exponent_b1 angstrom_exponent_b2 angstrom_turbidity_b1 angstrom_turbidity_b2 precipitable_water precipitable_water_all precipitable_water_gap_filled
+            clear data ozone angstrom_exponent_b1 angstrom_exponent_b2 angstrom_turbidity_b1 angstrom_turbidity_b2 precipitable_water precipitable_water_all precipitable_water_gap_filled land_mask
         end
     end

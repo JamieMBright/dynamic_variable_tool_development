@@ -150,16 +150,16 @@ for y = 1:length(years)
     % in the appropriate structure, units, or resolution. Firstly, download
     % all the native files. Secondly, extract the data and reshape and
     % interpolate it. Lastly, convert the data to required units before
-    % saving to disk. 
+    % saving to disk.
     NCEPextraction
     
     %% OMI extraction
-    %load OMI
-    %save OMI
-    %clear OMI
+    % OMI is stored as a single file per year. It is also much finer
+    % resolution then either NCEP or MODIS. The OMI is saved into its
+    % native resolution and will have an additional reference latitude and
+    % longitude with which to be able to use the OMI
+    OMIextraction
     
-    
-
 end
 
 

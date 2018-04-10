@@ -7,9 +7,15 @@
 % set upper bands
 c_upper=[0.6 0.03];
 c_lower=[0 0];
-
+% lats and lons
+lats=flip(-90+0.25/2:0.25:90-0.25/2);
+lons=-180+0.25/2:0.25:180-0.25/2;
+[lon,lat]=meshgrid(lons,lats);
+            
 %set file names
 file_prefixes={'OMI-Aura_L3-OMDOAO3e_','OMI-Aura_L3-OMNO2d_'};
+
+data_field_extraction={'/HDFEOS/GRIDS/ColumnAmountO3/Data Fields/ColumnAmountO3','/HDFEOS/GRIDS/ColumnAmountNO2/Data Fields/ColumnAmountNO2'};
 
 % loop through each variable required from OMI
 for var=1:length(OMI_vars)
@@ -22,10 +28,13 @@ for var=1:length(OMI_vars)
         
         %make blank array for whole year
         OMI_data=zeros(720,1440,365).*NaN;
-        OMI_confidence=zeros(720,1440,365);
         
         %loop through each day of the year
         for d=1:length(time_datenum_daily)
+            % report to console the current year
+            disp(datestr(time_datenum_daily(d),'dd-mm-yyyy'))            
+            
+            % extract the appropriate filename
             filename_search=[store.AURA_store,file_prefixes{var},datestr(time_datenum_daily(d),'yyyy'),'m',datestr(time_datenum_daily(d),'mm'),datestr(time_datenum_daily(d),'dd'),'*.he5'];
             filename=dir(filename_search);
             filename=[filename.name];
@@ -35,7 +44,7 @@ for var=1:length(OMI_vars)
             % get the file id
             fid=H5F.open(filepath,'H5F_ACC_RDONLY','H5P_DEFAULT');
             % Open the dataset.
-            data_field_name='/HDFEOS/GRIDS/ColumnAmountNO2/Data Fields/ColumnAmountNO2';
+            data_field_name=data_field_extraction{var};
             % get the data field id
             data_id=H5D.open(fid,data_field_name);
             % Read the dataset.
@@ -85,14 +94,16 @@ for var=1:length(OMI_vars)
             % for every square centimeter of area at the base of the column. Over the Earth’s
             % surface, the ozone layer’s average thickness is about 300 Dobson Units or a
             % layer that is 3 millimeters thick. https://ozonewatch.gsfc.nasa.gov/facts/dobson.html
-            data=data./2.69E16; %mol.cm-2 to DU
-            data=data./1000; %DU to cm
-            units{var}={'atm-cm'};
             
-            % lats and lons
-            lats=flip(-90+0.25/2:0.25:90-0.25/2);
-            lons=-180+0.25/2:0.25:180-0.25/2;
-            [lon,lat]=meshgrid(lons,lats);
+            switch OMI_vars{var}
+                case 'ozone'
+                    data=data./1000; %DU to cm
+                    units='atm-cm';
+                case 'nitrogen_dioxide'
+                    data=data./2.69E16; %mol.cm-2 to DU
+                    data=data./1000; %DU to cm
+                    units='atm-cm';
+            end
             
             % rotate the data
             data=flip(data');
@@ -117,26 +128,33 @@ for var=1:length(OMI_vars)
             data(data>c_upper(var))=c_upper(var);
             
             catch err%if thhe file doesn't exist or is corrupt, we cannot extract the data and so that day shall be filled with NaN values.
-                getReport(err,'extended')
-                data=zeros(720,1440).*NaN;
+                % permit file open errors, as this indicates non existent
+                % files or corrupt ones, neither can be managed. Other
+                % errors should be logged.
+                if strcmp(err.identifier,'MATLAB:imagesci:hdf5lib:fileOpenErr')
+                    data=zeros(720,1440).*NaN;
+                else                    
+                    getReport(err,'extended')
+                end
             end
             
             %populate the main struct with this data
             OMI_data(:,:,d)=data;
-            OMI_confidence(:,:,d)=data_confidence;
         end
         
+        OMI_confidence=int8(zeros(size(OMI_data)));
+        OMI_confidence(~isnan(OMI_data))=1;
         % save the data
         filename=GetFilename(store,OMI_vars{var},years(y),OMI_prefix);
-        save(filename,OMI_vars{var});
+        save(filename,'OMI_data','-v7.3');
         % save the confidence
         filename=GetFilename(store,OMI_vars{var},years(y),OMI_prefix,true);
-        save(filename,'OMI_confidence');
+        save(filename,'OMI_confidence','-v7.3');
         clear OMI_confidence
         
         % Make a gif of a single year
         gif_file = [store.raw_outputs_store,OMI_vars{var},filesep,OMI_prefix,'_',OMI_vars{var},'_',num2str(years(y)),'.gif'];
-        SaveMapToGIF(gif_file,eval(OMI_vars{var}),lats,lons,OMI_vars{var},units{var},time_datenum_daily,c_upper(var),c_lower(var))
+        SaveMapToGIF(gif_file,OMI_data,lats,lons,OMI_vars{var},units,time_datenum_daily,c_upper(var),c_lower(var))
         
         % clear unwanted data for space save
         clear OMI_data land_mask data

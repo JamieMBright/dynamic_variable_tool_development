@@ -87,15 +87,15 @@
                         % inside the PostProcessing function. Also within
                         % there are the gapfilling methods
                         if ~isempty(data)
-                            [a_b1,a_b2,b_b1,b_b2]=PostProcessingOfModisAOD(data,latitudes_HDF,longitudes_HDF,land_mask);
+                            [a_b1,a_b2,b_b1,b_b2,a_b1_c,a_b2_c,b_b1_c,b_b2_c]=PostProcessingOfModisAOD(data,latitudes_HDF,longitudes_HDF,land_mask);
                             angstrom_exponent_b1(:,:,d)=a_b1;
                             angstrom_exponent_b2(:,:,d)=a_b2;
                             angstrom_turbidity_b1(:,:,d)=b_b1;
                             angstrom_turbidity_b2(:,:,d)=b_b2;
-                            angstrom_exponent_b1_confidence(:,:,d)=~isnan(a_b1);
-                            angstrom_exponent_b2_confidence(:,:,d)=~isnan(a_b2);
-                            angstrom_turbidity_b1_confidence(:,:,d)=~isnan(b_b1);
-                            angstrom_turbidity_b2_confidence(:,:,d)=~isnan(b_b2);
+                            angstrom_exponent_b1_confidence(:,:,d)=a_b1_c;
+                            angstrom_exponent_b2_confidence(:,:,d)=a_b2_c;
+                            angstrom_turbidity_b1_confidence(:,:,d)=b_b1_c;
+                            angstrom_turbidity_b2_confidence(:,:,d)=b_b2_c;
                         end
                         
                     case 'ozone'
@@ -154,9 +154,9 @@
             % Save the data to file
             for s=1:length(save_str)
                 filename=GetFilename(store,save_str{s},years(y),MODIS_prefix);
-                save(filename,save_str{s});
+                save(filename,save_str{s},'-v7.3');
                 filename=GetFilename(store,save_str{s},years(y),MODIS_prefix,true);
-                save(filename,[save_str{s},'_confidence']);
+                save(filename,[save_str{s},'_confidence'],'-v7.3');
                 
                 % Make a gif of a single year
                 gif_file = [store.raw_outputs_store,save_str{s},filesep,'MODIS_',save_str{s},'_',num2str(years(y)),'.gif'];

@@ -93,10 +93,10 @@ for var=1:length(NCEP_vars)
                 %save NCEP var
                 % Save the data to file
                 filename=GetFilename(store,NCEP_vars{var},years(y),NCEP_prefix);
-                save(filename,'NCEP_data');
+                save(filename,'NCEP_data','-v7.3');
                 % Save the confidence to file
                 filename=GetFilename(store,NCEP_vars{var},years(y),NCEP_prefix,true);
-                save(filename,'NCEP_confidence');
+                save(filename,'NCEP_confidence','-v7.3');
                 
                 % Make a gif of a single year
                 gif_file = [store.raw_outputs_store,NCEP_var{var},filesep,NCEP_prefix,'_',NCEP_var{var},'_',num2str(years(y)),'.gif'];

@@ -41,7 +41,7 @@ if nansum(nansum(nansum(isnan(data_main))))>=1
             dis(dis>4)=NaN;
             % IDW weightings
             weighting=1./(dis.^3);
-            nan_fill=data(data_notnan_inds(nearest_inds))';
+            nan_fill=data(data_notnan_inds(nearest_inds));
             % apply IDW
             missing_data=nansum(nan_fill.*weighting,2)./nansum(weighting,2);
             data_raw=data;

@@ -1,4 +1,4 @@
-function [alpha_b1,alpha_b2,beta_b1,beta_b2]=PostProcessingOfModisAOD(data,latitudes_HDF,longitudes_HDF,land_mask)
+function [alpha_b1,alpha_b2,beta_b1,beta_b2,alpha_b1_confidence,alpha_b2_confidence,beta_b1_confidence,beta_b2_confidence]=PostProcessingOfModisAOD(data,latitudes_HDF,longitudes_HDF,land_mask)
 
 % Angstrom Exponent (alpha)
 % Gueymard 2008, Solar Energy 82 272-285, Table 1 states:

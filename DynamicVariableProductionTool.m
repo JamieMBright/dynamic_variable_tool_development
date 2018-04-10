@@ -196,7 +196,7 @@ years=2002:2018;
 % The yearly variable files will be overwritten if the flag is set to true,
 % should the flag be false, the tool will skip this year and variable, with
 % the exception of the current year, whereby new data will be checked for.
-overwrite_flag=false;
+overwrite_flag=true;
 current_year=year(now);
 
 %% Trigger the main part of the function

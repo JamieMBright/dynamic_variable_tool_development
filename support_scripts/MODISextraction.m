@@ -19,7 +19,10 @@
                         'Deep_Blue_Aerosol_Optical_Depth_Land_Micron_Levels',...
                         'Deep_Blue_Aerosol_Optical_Depth_Land_Mean',...
                         };
-                    
+                    angstrom_exponent_b1_confidence=int8(zeros(180,360,length(time_datenum_daily)));
+                    angstrom_exponent_b2_confidence=int8(zeros(180,360,length(time_datenum_daily)));
+                    angstrom_turbidity_b1_confidence=int8(zeros(180,360,length(time_datenum_daily)));
+                    angstrom_turbidity_b2_confidence=int8(zeros(180,360,length(time_datenum_daily)));
                     angstrom_exponent_b1=zeros(180,360,length(time_datenum_daily)).*NaN;
                     angstrom_exponent_b2=zeros(180,360,length(time_datenum_daily)).*NaN;
                     angstrom_turbidity_b1=zeros(180,360,length(time_datenum_daily)).*NaN;
@@ -33,6 +36,7 @@
                 case 'ozone'
                     MODIS_datafields={'Total_Ozone_Mean'};
                     ozone=zeros(180,360,length(time_datenum_daily)).*NaN;
+                    ozone_confidence=int8(zeros(180,360,length(time_datenum_daily)));
                     units={'atm-cm'};
                     long_name='Total Ozone Burden: Mean';
                     c_upper=0.6;
@@ -45,6 +49,7 @@
                     %                         'Water_Vapor_Near_Infrared_Clear_Mean',...
                     %                         'Water_Vapor_Near_Infrared_Cloud_Mean',...
                     precipitable_water=zeros(180,360,length(time_datenum_daily)).*NaN;
+                    precipitable_water_confidence=int8(zeros(180,360,length(time_datenum_daily)));
                     units={'cm'};
                     long_name='Precipitable Water Vapor (IR Retrieval) Total Column: Mean';
                     c_upper=8;
@@ -87,7 +92,10 @@
                             angstrom_exponent_b2(:,:,d)=a_b2;
                             angstrom_turbidity_b1(:,:,d)=b_b1;
                             angstrom_turbidity_b2(:,:,d)=b_b2;
-                            
+                            angstrom_exponent_b1_confidence(:,:,d)=~isnan(a_b1);
+                            angstrom_exponent_b2_confidence(:,:,d)=~isnan(a_b2);
+                            angstrom_turbidity_b1_confidence(:,:,d)=~isnan(b_b1);
+                            angstrom_turbidity_b2_confidence(:,:,d)=~isnan(b_b2);
                         end
                         
                     case 'ozone'
@@ -106,6 +114,7 @@
                             data.Total_Ozone_Mean=REST2FillMissing(land_mask,longitudes_HDF,latitudes_HDF,data.Total_Ozone_Mean);
                             %allocate to main variable
                             ozone(:,:,d)=data.Total_Ozone_Mean./1000;
+                            ozone_confidence(:,:,d)=~isnan(data.Total_Ozone_Mean);
                         end
                         
                     case 'precipitable_water'
@@ -132,6 +141,7 @@
                             end
                             
                             precipitable_water(:,:,d)=precipitable_water_gap_filled;
+                            precipitable_water_confidence(:,:,d)=~isnan(precipitable_water_gap_filled);
                             
                         end
                         
@@ -145,6 +155,8 @@
             for s=1:length(save_str)
                 filename=GetFilename(store,save_str{s},years(y),MODIS_prefix);
                 save(filename,save_str{s});
+                filename=GetFilename(store,save_str{s},years(y),MODIS_prefix,true);
+                save(filename,[save_str{s},'_confidence']);
                 
                 % Make a gif of a single year
                 gif_file = [store.raw_outputs_store,save_str{s},filesep,'MODIS_',save_str{s},'_',num2str(years(y)),'.gif'];

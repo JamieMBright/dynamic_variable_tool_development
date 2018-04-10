@@ -22,6 +22,7 @@ for var=1:length(OMI_vars)
         
         %make blank array for whole year
         OMI_data=zeros(720,1440,365).*NaN;
+        OMI_confidence=zeros(720,1440,365);
         
         %loop through each day of the year
         for d=1:length(time_datenum_daily)
@@ -106,6 +107,9 @@ for var=1:length(OMI_vars)
                 catch err
                 end
             end
+            
+            data_confidence=zeros(size(data));
+            data_confidence(~isnan(data))=1;
             data=REST2FillMissing(land_mask,lons,lats,data);
             
             % apply REST2 limmitations of 0<u_n<0.03 atm-cm
@@ -119,16 +123,22 @@ for var=1:length(OMI_vars)
             
             %populate the main struct with this data
             OMI_data(:,:,d)=data;
+            OMI_confidence(:,:,d)=data_confidence;
         end
         
-        %save the data
+        % save the data
         filename=GetFilename(store,OMI_vars{var},years(y),OMI_prefix);
         save(filename,OMI_vars{var});
+        % save the confidence
+        filename=GetFilename(store,OMI_vars{var},years(y),OMI_prefix,true);
+        save(filename,'OMI_confidence');
+        clear OMI_confidence
         
         % Make a gif of a single year
         gif_file = [store.raw_outputs_store,OMI_vars{var},filesep,OMI_prefix,'_',OMI_vars{var},'_',num2str(years(y)),'.gif'];
         SaveMapToGIF(gif_file,eval(OMI_vars{var}),lats,lons,OMI_vars{var},units{var},time_datenum_daily,c_upper(var),c_lower(var))
         
+        % clear unwanted data for space save
         clear OMI_data land_mask data
     end
 end

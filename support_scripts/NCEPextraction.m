@@ -83,10 +83,20 @@ for var=1:length(NCEP_vars)
                         % Relative humidity is in % which is the satisfactory unit.
                 end
                 
+                %create a confidence variable
+                NCEP_confidence=zeros(size(NCEP_data));
+                NCEP_confidence(~isnan(NCEP_data))=1;
+                
+                % fill any gaps.
+                NCEP_data=REST2FillMissing(land_mask,lon,lat,NCEP_data);
+                                
                 %save NCEP var
                 % Save the data to file
                 filename=GetFilename(store,NCEP_vars{var},years(y),NCEP_prefix);
                 save(filename,'NCEP_data');
+                % Save the confidence to file
+                filename=GetFilename(store,NCEP_vars{var},years(y),NCEP_prefix,true);
+                save(filename,'NCEP_confidence');
                 
                 % Make a gif of a single year
                 gif_file = [store.raw_outputs_store,NCEP_var{var},filesep,NCEP_prefix,'_',NCEP_var{var},'_',num2str(years(y)),'.gif'];

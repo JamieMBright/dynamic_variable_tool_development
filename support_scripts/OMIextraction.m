@@ -112,8 +112,8 @@ for var=1:length(OMI_vars)
             data(data<c_lower(var))=c_lower(var);
             data(data>c_upper(var))=c_upper(var);
             
-            catch %if thhe file doesn't exist or is corrupt, we cannot extract the data and so that day shall be filled with NaN values.
-                
+            catch err%if thhe file doesn't exist or is corrupt, we cannot extract the data and so that day shall be filled with NaN values.
+                getReport(err,'extended')
                 data=zeros(720,1440).*NaN;
             end
             

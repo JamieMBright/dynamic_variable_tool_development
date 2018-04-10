@@ -16,7 +16,7 @@
 % the whole of the current year, as it will make a check for new data.
 %% MODIS
 % Decision about whether to perform this year or not
-function [MODIS_raw_process,NCEP_raw_process,OMI_raw_process]=ProcessRawDataCalibration(overwrite_flag,current_year,year,MODIS_vars,NCEP_vars,OMI_vars,storeMODIS_prefix,NCEP_prefix,OMI_prefix)
+function [MODIS_raw_process,NCEP_raw_process,OMI_raw_process]=ProcessRawDataCalibration(overwrite_flag,current_year,year,MODIS_vars,NCEP_vars,OMI_vars,store,MODIS_prefix,NCEP_prefix,OMI_prefix)
 
 % if an overwrite is not requested
 if overwrite_flag==false
@@ -49,7 +49,7 @@ if overwrite_flag==false
                 end
                 
             else
-                filename=GetFilename(store,MODIS_vars{i},year,prefix);
+                filename=GetFilename(store,MODIS_vars{i},year,MODIS_prefix);
                 % check whether the file exists.
                 if ~exist(filename,'file')s
                     %if the file doesnt exist, add a marker in the flag variable.

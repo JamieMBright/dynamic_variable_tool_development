@@ -21,15 +21,88 @@
 %  | Variable        Source              Conversion      Validation      |
 %  +---------------------------------------------------------------------+
 %  | Pressure        NCEP                Y               BSRN            |
-%  | Rel. Humidity   NCEP                Y               BSRN            |
-%  | Temperature     NCEP                Y               BSRN            |
+%  | Rel. Humidity   NCEP                N               BSRN            |
+%  | Temperature     NCEP                N               BSRN            |
 %  | AOD             MODIS               Y(Complex)      AERONET         |
-%  | Ozone           MODIS, NCEP, OMI    Y               AERONET         |
+%  | Ozone           MODIS, OMI          Y               AERONET         |
 %  | Nitrgen di.     OMI                 Y               x               |
 %  | Precip. Water   MODIS, NCEP         Y               AERONET/BSRN    |
 %  +---------------------------------------------------------------------+
 %
+%
+% ========================================================================
+%                          Where to download?
+% ========================================================================
+%                                 MODIS
+% MODIS Aqua and Terra images can be obtaind from the ladsweb ftp and http
+% server. A programatic approach is to use the DownloadWithWget.m function
+% provided in the utility functions.
+%   WEBSITE:
+% https://ladsweb.modaps.eosdis.nasa.gov/archive/allData/6/MOD08_D3/
+% https://ladsweb.modaps.eosdis.nasa.gov/archive/allData/6/MYD08_D3/
+%   URL STRUCTURE:
+% https://ladsweb.modaps.eosdis.nasa.gov/archive/allData/6/MOD08_D3/...
+%                        2018/001/MOD08_D3.A2018001.006.2018002085456.hdf
+% This is difficult to programatically download due to the
+% non-predictability of the url end. An FTP connection is ideal. This tool
+% assumes the native file structure of the MOD08_D3 and MYD08_D3 setup.
+%
+%                                 NCEP
+% NCEP has the simplest file structure and the download capability is
+% provided programatically within this tool. Firstly, however, cygwin must
+% be installed and activating the web wget options on install and then
+% adding wget to the system environments. The instructions for this are
+% more detailed within the DownloadWithWget.m comments. The NCEP reanalysis
+% data is found at an ftp server by NOAA:
+% ftp://ftp.cdc.noaa.gov/Datasets/ncep.reanalysis/surface/pres.sfc.2017.nc
+% ftp://ftp.cdc.noaa.gov/Datasets/ncep.reanalysis/surface_gauss/air.2m.gauss.1948.nc
+% ftp://ftp.cdc.noaa.gov/Datasets/ncep.reanalysis/surface/pr_wtr.eatm.1948.nc
+% ftp://ftp.cdc.noaa.gov/Datasets/ncep.reanalysis/surface/rhum.sig995.1948.nc
+% The function DownloadAllReanalysisData.m is provided and encouraged to be
+% used as it defines the directory structure on the local machine using the
+% store variable to locate it. This requires the aforementioned wget
+% requisite.
+% The NCEP variables must be within the store varaible defined directory
+% and placed inside the appropriate directories called "precipitable_water"
+% "pressure", "relative_humidity" and "temperature_2m". The files must be
+% called "pwat-yyyy.nc", "rh3-yyyy.nc", "pres.sfc.yyyy.nc" and 
+% "tamb-yyyy.nc" respectively for each should the
+% DownloadAllReanalysisData.m script not be utilised.
+% This can be modified, however, would require some debugging.
+%
+%                                  OMI
+% The OMI data can be programatically downloaded using the cygwin and wget
+% operability as mentioned before. Firstly, however, the user must register
+% with the NNASA GES DISC https://disc.gsfc.nasa.gov/data-access to obtain
+% permissions to download the data and then approve the use of the GESDISC
+% DATA ARCHIVE in your accoutn settings.
+% Once the account has been set up, a proprietry step is to create a
+% cookies and permissions file entering the following into the Cygwin
+% terminal and replacing USERNAME and PASSWORD with your details:
+%    cd ~
+%    touch .netrc
+%    echo "machine urs.earthdata.nasa.gov login USERNAME password PASSWORD" >> .netrc
+%    chmod 0600 .netrc
+%    touch .urs_cookies
+% After this, the following commands will download all the appropriate
+% files to the same directory for NO2 and O3:
+%                        
+%    wget --load-cookies ~/.urs_cookies --save-cookies ~/.urs_cookies 
+%      --keep-session-cookies -r --level=2 -c -nH -nd -np -P F:/AURA/  ...
+%      --accept *.he5 --no-host-directories --cut-dirs=2   ...
+%      "https://acdisc.gesdisc.eosdis.nasa.gov/data/Aura_OMI_Level3/OMNO2d.003/"
 
+%    wget --load-cookies ~/.urs_cookies --save-cookies ~/.urs_cookies 
+%      --keep-session-cookies -r --level=2 -c -nH -nd -np -P F:/AURA/  ...
+%      --accept *.he5 --no-host-directories --cut-dirs=2   ...
+%      "https://acdisc.gsfc.nasa.gov/data/Aura_OMI_Level3/OMDOAO3e.003/"
+%
+% Where F:/AURA/ is the location the same as set in the store variable. The
+% file structure locally is all located inside the same directory, the
+% above commands will satisfy this and place them all in F:/AURA/.
+% This is not programatically called within the code, and so is a
+% prepriotroy step before this extraction can be performed.
+%
 % ========================================================================
 %                           Input user requirements
 % ========================================================================
@@ -55,6 +128,8 @@
 % Precipitable_water        - the precipitable water column (cm)
 % Ozone                     - the column ozone amount (atm-cm)
 % Nitrogen Dioxide          - the column nitrogen amount (atm-cm)
+%
+%                Potential to include these?
 % Ground_albedo             - the ground albedo for X km radius
 % AOD_broadband             - the aerosol optical depth for broadband irad.
 % AOD_b1                    - the aerosol optical depth for band 1
@@ -95,9 +170,7 @@ init_directory(store.raw_outputs_store);
 % function using a switch(variables) and so this naming convention should
 % not be modified away from 'pressure','relative_humidity', 'temperature',
 % 'aerosol_optical_depth','ozone','nitrogen_dioxide', 'precipitable_water'.
-in_variables={'pressure','relative_humidity','temperature','aerosol_optical_depth','ozone','nitrogen_dioxide','precipitable_water','ground_albedo'};
 % OMI, NCEP, MODIS
-num_of_data_sources=3;
 MODIS_vars={'aerosol_optical_depth','ozone','precipitable_water'};
 NCEP_vars={'pressure','temperature_2m','precipitable_water','relative_humidity'};
 OMI_vars={'ozone','nitrogen_dioxide'};

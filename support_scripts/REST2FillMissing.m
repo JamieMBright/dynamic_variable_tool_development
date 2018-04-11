@@ -38,7 +38,13 @@ if nansum(nansum(nansum(isnan(data_main))))>=1
             b=[LAT(data_nan_inds),LON(data_nan_inds)];
             %find nearest neighbour
             [nearest_inds,dis]=knnsearch(a,b,'k',10);
-            dis(dis>4)=NaN;
+            % remove data that is too far to influence. The distance is in
+            % the native spatial resolution in pixels, so 180x360 deg
+            % resolution (1deg res) will consider values within 4deg if
+            % dis>4 is considered.
+            desired_res=4;
+            data_res=longitudes_HDF(2)-longitudes_HDF(1);
+            dis(dis>(desired_res/data_res))=NaN;
             % IDW weightings
             weighting=1./(dis.^3);
             nan_fill=data(data_notnan_inds(nearest_inds));

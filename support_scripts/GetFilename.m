@@ -10,6 +10,7 @@ if ~exist('suffix','var')
     % default to the assumption that the filename required is not related
     % to confidence flags
     suffix_flag=false;
+else suffix_flag=true;
 end
 
 % if this is a confidence flag

@@ -219,7 +219,7 @@ for y = 1:length(years)
     % MODIS files store a large amount of variables per file, this differes
     % from NCEP where each variable has its own file. This means that all
     % variables must all be extracted in a single loading of the files.
-    MODISextraction
+    MODISextraction(MODIS_vars,years,y,store)
     
     %% NCEP extraction
     % NCEP is stored natively in a single year per file, however, it is not
@@ -227,14 +227,14 @@ for y = 1:length(years)
     % all the native files. Secondly, extract the data and reshape and
     % interpolate it. Lastly, convert the data to required units before
     % saving to disk.
-    NCEPextraction
+    NCEPextraction(NCEP_vars,years,y,store)
     
     %% OMI extraction
     % OMI is stored as a single file per year. It is also much finer
     % resolution then either NCEP or MODIS. The OMI is saved into its
     % native resolution and will have an additional reference latitude and
     % longitude with which to be able to use the OMI
-    OMIextraction
+    OMIextraction(OMI_vars,years,y,store)
     
 end
 

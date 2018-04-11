@@ -64,19 +64,32 @@ lonlim=[floor(min(min(longitudes))),ceil(max(max(longitudes)))];
 axesm('MapProjection','eqdcylin','MapLatLimit',latlim,'MapLonLimit',lonlim, ...
     'Frame','on','Grid','on', ...
     'MeridianLabel','on','ParallelLabel','on');
+% Put color bar.
+colours=[255,247,251;...
+% 236,231,242;...
+% 208,209,230;...
+% 166,189,219;...
+% 116,169,207;...
+54,144,192;...
+5,112,176;...
+4,90,141;...
+2,56,88]./255;
+c_x=1:length(colours);
+colours_interped=interp1(c_x,colours,linspace(c_x(1),c_x(end),30));
 
 switch plot_type
     case 'surfm'
-        surfm(latitudes,longitudes,data)
+        surfm(latitudes,longitudes,data)        
     case 'contourfm'
         contourfm(latitudes,longitudes,data,15,'LineStyle','none');
 end
 
+colormap(colours_interped);
 % Load the coastlines data file
 coast = load('coast.mat');
 % Draw the coastlines in color black ('k').
 plotm(coast.lat,coast.long,'k')
-% Put color bar.
+
 h=colorbar();
 caxis(clims)
 set(get(h, 'title'), 'string', units);

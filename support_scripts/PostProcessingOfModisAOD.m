@@ -36,6 +36,12 @@ AOD660=nanmean(AOD_660,3);
 % possible in the band ranges
 alpha_b1=log(AOD470./AOD660)./log(660/470);
 alpha_b2=log(AOD660./AOD870)./log(870/660);
+% because AOD870 is only available over water, it is no good to us.
+% Instead, we must use alpha_b1 and a derivation of 870 from 660 to get
+% values over land.
+AOD870_derived=exp(log(AOD660)-log(870/660).*alpha_b1);
+alpha_b2(isnan(alpha_b2))=log(AOD660(isnan(alpha_b2))./AOD870_derived(isnan(alpha_b2)))./log(870/660);
+
 % Limit the alpha values by the REST2 limitations
 % reported as 0<alpha<2.5 (Gueymard, 2008)
 alpha_b1(alpha_b1<0)=0;

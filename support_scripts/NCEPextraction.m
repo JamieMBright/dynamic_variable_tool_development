@@ -1,4 +1,4 @@
-function NCEPextraction(NCEP_vars,years,y,store)
+function NCEPextraction(NCEP_vars,NCEP_raw_process,NCEP_prefix,years,y,store)
 
 DownloadAllReanalysisData(years,NCEP_vars,store);
 NCEP_var_root={'pres.sfc.','tamb-','pwat-','rh3-'};
@@ -17,7 +17,7 @@ lon_real=(-179.5:179.5)';
 
 %loop through each variable to be extracted from NCEP
 for var=1:length(NCEP_vars)
-    
+    disp(['Processing NCEP: ',NCEP_vars{var},' for ',num2str(years(y))])
     % check whether this variable must be performed
     if NCEP_raw_process(var)==1
         
@@ -31,20 +31,20 @@ for var=1:length(NCEP_vars)
                 %get the reference file using the input date year
                 evalc('nc=ncgeodataset(filepath);');
                 %extract the precipitable water column data
-                data=nc{NCEP_var_name{var}};
+                evalc('data=nc{NCEP_var_name{var}};');
                 %remove from object to make matrix workspace
                 data=double(data(:));
                 %repeat for lat, lon and time
-                lat=nc{'lat'};
+                evalc('lat=nc{''lat''};');
                 lat=double(lat(:));
-                lon=nc{'lon'};
+                evalc('lon=nc{''lon''};');
                 lon=double(lon(:));
                 % take a look at time.attributes - it's hours since 1/1/1800 00:00
-                time=nc{'time'};
+                evalc('time=nc{''time''};');
                 time=time(:);
                 %create datenums of the time
                 time=datenum('1800-1-1 00:00')+time./24;
-                time_dayvecs=dateve(time);
+                time_dayvecs=datevec(time);
                 
                 % data must be in 180x360 latxlon format and the 3rd dim is time
                 %make a mesh grid of the world in original resolution

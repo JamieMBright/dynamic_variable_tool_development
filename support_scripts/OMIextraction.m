@@ -1,5 +1,4 @@
-
-function OMIextraction(OMI_vars,years,y,store)
+function OMIextraction(OMI_vars,OMI_raw_process,OMI_prefix,years,y,store)
 % Help to open the OMI type data was found at
 % https://disc.gsfc.nasa.gov/datasets/OMSO2G_V003/summary
 % https://acdisc.gsfc.nasa.gov/data/Aura_OMI_Level3/OMDOAO3e.003/2004/OMI-Aura_L3-OMDOAO3e_2004m1001_v003-2011m1109t084506.he5
@@ -34,8 +33,8 @@ for var=1:length(OMI_vars)
         
         %loop through each day of the year
         for d=1:length(time_datenum_daily)
-            % report to console the current year
-            disp(datestr(time_datenum_daily(d),'dd-mm-yyyy'))
+            % report to console
+            disp(['Processing OMI: ',OMI_vars{var},' for ',datestr(time_datenum_daily(d))])
             
             % extract the appropriate filename
             filename_search=[store.AURA_store,file_prefixes{var},datestr(time_datenum_daily(d),'yyyy'),'m',datestr(time_datenum_daily(d),'mm'),datestr(time_datenum_daily(d),'dd'),'*.he5'];

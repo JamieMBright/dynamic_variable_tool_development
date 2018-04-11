@@ -1,10 +1,9 @@
-function MODISextraction(MODIS_vars,years,y,store)
+function MODISextraction(MODIS_vars,MODIS_raw_process,MODIS_prefix,years,y,store)
 
 
 for var=1:length(MODIS_vars)
     % if the flag says this variable must be processed, then process.
     if MODIS_raw_process(var)==1
-        disp(['Processing ',MODIS_vars{var}])
         % Convert time into apprpriate format for MODIS - daily files
         time_datenum_daily=datenum(num2str(years(y)),'yyyy'):datenum(num2str(years(y)+1),'yyyy')-1;
         time_dayvecs=datevec(time_datenum_daily);
@@ -64,7 +63,7 @@ for var=1:length(MODIS_vars)
         % trigger loadHDFEOS and extract the necessary data to get Angstrom
         % Loop through each day within the year
         for d = 1:length(time_datenum_daily)
-            disp(datestr(time_datenum_daily(d)))
+            disp(['Processing MODIS: ',MODIS_vars{var},' for ',datestr(time_datenum_daily(d))])
             % make a a string of the current day
             datestr_yyyymmdd=datestr(time_datenum_daily(d),'yyyymmdd');
             

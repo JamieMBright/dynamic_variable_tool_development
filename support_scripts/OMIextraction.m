@@ -28,6 +28,7 @@ for var=1:length(OMI_vars)
         
         %make blank array for whole year
         OMI_data=zeros(720,1440,365).*NaN;
+        OMI_confidence=int8(zeros(size(OMI_data)));
         
         %loop through each day of the year
         for d=1:length(time_datenum_daily)
@@ -140,10 +141,10 @@ for var=1:length(OMI_vars)
             
             %populate the main struct with this data
             OMI_data(:,:,d)=data;
+            OMI_confidence(:,:,d)=data_confidence;
+            
         end
         
-        OMI_confidence=int8(zeros(size(OMI_data)));
-        OMI_confidence(~isnan(OMI_data))=1;
         % save the data
         filename=GetFilename(store,OMI_vars{var},years(y),OMI_prefix);
         save(filename,'OMI_data','-v7.3');
@@ -154,8 +155,11 @@ for var=1:length(OMI_vars)
         
         % Make a gif of a single year
         gif_file = [store.raw_outputs_store,OMI_vars{var},filesep,OMI_prefix,'_',OMI_vars{var},'_',num2str(years(y)),'.gif'];
-        SaveMapToGIF(gif_file,OMI_data,lats,lons,OMI_vars{var},units,time_datenum_daily,c_upper(var),c_lower(var))
-        
+        if strcmp(OMI_vars{var},'nitrogen_dioxide')
+            SaveMapToGIF(gif_file,data,lats,lons,OMI_vars{var},units,time_datenum_daily,0.001,c_lower(var))
+        else
+            SaveMapToGIF(gif_file,OMI_data,lats,lons,OMI_vars{var},units,time_datenum_daily,c_upper(var),c_lower(var))
+        end
         % clear unwanted data for space save
         clear OMI_data land_mask data
     end

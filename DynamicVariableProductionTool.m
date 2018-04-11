@@ -190,7 +190,10 @@ OMI_prefix='OMI';
 % A fundamental component to the main function is the year that is
 % required. The output format of each of the listed output variables is a
 % 3D matrix of longitude*latitude*time for a whole year.
-years=2002:2018;
+% years=2002:2018;
+y1=input('Start year: ');
+y2=input('End years: ');
+years=y1:y2;
 
 %% Specify the overwrite flag
 % The yearly variable files will be overwritten if the flag is set to true,

@@ -1,3 +1,4 @@
+function NCEPextraction(NCEP_vars,years,y,store)
 
 DownloadAllReanalysisData(years,NCEP_vars,store);
 NCEP_var_root={'pres.sfc.','tamb-','pwat-','rh3-'};
@@ -43,6 +44,7 @@ for var=1:length(NCEP_vars)
                 time=time(:);
                 %create datenums of the time
                 time=datenum('1800-1-1 00:00')+time./24;
+                time_dayvecs=dateve(time);
                 
                 % data must be in 180x360 latxlon format and the 3rd dim is time
                 %make a mesh grid of the world in original resolution
@@ -108,8 +110,16 @@ for var=1:length(NCEP_vars)
                 filename=GetFilename(store,NCEP_vars{var},years(y),NCEP_prefix);
                 save(filename,'NCEP_data','-v7.3');
                 % Save the confidence to file
-                filename=GetFilename(store,NCEP_vars{var},years(y),NCEP_prefix,true);
+                filename=GetFilename(store,NCEP_vars{var},years(y),NCEP_prefix,'confidence');
                 save(filename,'NCEP_confidence','-v7.3');
+                % save the times
+                filename=GetFilename(store,NCEP_vars{var},years(y),NCEP_prefix,'times_datevec');
+                save(filename,'time_dayvecs','-v7.3');
+                % save the one time latitudes and longitudes
+                filename=GetFilename(store,NCEP_vars{var},years(y),NCEP_prefix,'latitudes');
+                save(filename,'lat_new','-v7.3');
+                filename=GetFilename(store,NCEP_vars{var},years(y),NCEP_prefix,'longitudes');
+                save(filename,'lon_real','-v7.3');
                 
                 % Make a gif of a single year
                 gif_file = [store.raw_outputs_store,NCEP_vars{var},filesep,NCEP_prefix,'_',NCEP_vars{var},'_',num2str(years(y)),'.gif'];
@@ -129,4 +139,5 @@ for var=1:length(NCEP_vars)
             end
         end
     end
+end
 end

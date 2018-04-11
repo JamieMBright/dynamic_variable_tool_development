@@ -176,7 +176,7 @@ NCEP_vars={'pressure','temperature_2m','precipitable_water','relative_humidity'}
 OMI_vars={'ozone','nitrogen_dioxide'};
 
 %% Output variables
-out_variables={'pressure','relative_humidity','temperature','angstrom_turbidity_b1','angstrom_turbidity_b2','angstrom_exponent_b1','angstrom_exponent_b2','ozone','nitrogen_dioxide','precipitable_water'};%,'AOD_broadband','AOD_b1','AOD_b2','lambda_b1','lambda_b2','ground_albedo'};
+out_variables={'pressure','relative_humidity','temperature_2m','angstrom_turbidity_b1','angstrom_turbidity_b2','angstrom_exponent_b1','angstrom_exponent_b2','ozone','nitrogen_dioxide','precipitable_water'};%,'AOD_broadband','AOD_b1','AOD_b2','lambda_b1','lambda_b2','ground_albedo'};
 % initialise an output directory for each of the raw variables.
 for v=1:length(out_variables)
     directory=[store.raw_outputs_store,filesep,out_variables{v},filesep];

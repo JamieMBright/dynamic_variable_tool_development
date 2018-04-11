@@ -8,7 +8,7 @@ c_lower=[300 150 0 0];
 
 % make new grid to interpolate the reanalysis data to. Use the MODIS
 % 180x360 format for this
-lat_new=flip(-89.5:89.5)';
+lat_new=flip(-88.5:88.5)';
 lon_new=linspace(0,357.5,360);
 lon_real=(-179.5:179.5)';
 %make a meshed version of the new lon/lat for 2D interp
@@ -28,7 +28,7 @@ for var=1:length(NCEP_vars)
                 %load NCEP var
                 % extract the appropriate data from the NetCDF file
                 %get the reference file using the input date year
-                nc=ncgeodataset(filepath);
+                evalc('nc=ncgeodataset(filepath);');
                 %extract the precipitable water column data
                 data=nc{NCEP_var_name{var}};
                 %remove from object to make matrix workspace
@@ -60,6 +60,7 @@ for var=1:length(NCEP_vars)
                 end
                 
                 
+                
                 % apply unit conversions where appropriate
                 switch NCEP_vars{var}
                     case 'pressure'
@@ -67,10 +68,12 @@ for var=1:length(NCEP_vars)
                         % unit for pressure is hPa.
                         % 100pa=1hPa
                         NCEP_data=NCEP_data./100;
+                        units='hPa';
                         
                     case 'temperature_2m'
                         % pressure is natively in Kelvin from NCEP. This is a
                         % satisfactory unit for temperature
+                        units='K';
                         
                     case 'precipitable_water'
                         % precipitable water is in kg/m^2. The desired format is
@@ -78,18 +81,28 @@ for var=1:length(NCEP_vars)
                         % 1kg of water at STP = 1 litre = 1000cubic cm.
                         % 1 m^2 is 10,000cm^2, therefore 1kg water=0.1cm;
                         NCEP_data=NCEP_data.*0.1;
+                        units='atm-cm';
                         
                     case 'relative_humidity'
                         % Relative humidity is in % which is the satisfactory unit.
+                        units='%';
                 end
                 
                 %create a confidence variable
                 NCEP_confidence=zeros(size(NCEP_data));
                 NCEP_confidence(~isnan(NCEP_data))=1;
                 
+                % load the land mask for gap filling
+                if ~exist('land_mask','var')
+                    [LON_lm,LAT_lm]=meshgrid(lon_new-180,lat_new);
+                    LAT_lm=reshape(LAT_lm,numel(LAT_lm),1);
+                    LON_lm=reshape(LON_lm,numel(LON_lm),1);
+                    land_mask=reshape(landmask(LAT_lm,LON_lm),[length(lat_new),length(lon_new)]);
+                end
+                
                 % fill any gaps.
                 NCEP_data=REST2FillMissing(land_mask,lon,lat,NCEP_data);
-                                
+                
                 %save NCEP var
                 % Save the data to file
                 filename=GetFilename(store,NCEP_vars{var},years(y),NCEP_prefix);
@@ -99,14 +112,20 @@ for var=1:length(NCEP_vars)
                 save(filename,'NCEP_confidence','-v7.3');
                 
                 % Make a gif of a single year
-                gif_file = [store.raw_outputs_store,NCEP_var{var},filesep,NCEP_prefix,'_',NCEP_var{var},'_',num2str(years(y)),'.gif'];
-                SaveMapToGIF(gif_file,eval(save_str{s}),lat_new,lon_real,save_str{s},units{s},time,c_upper(s),c_lower(s))
+                gif_file = [store.raw_outputs_store,NCEP_vars{var},filesep,NCEP_prefix,'_',NCEP_vars{var},'_',num2str(years(y)),'.gif'];
+                if exist(gif_file,'file')
+                    delete(gif_file);
+                end
+                SaveMapToGIF(gif_file,NCEP_data,lat_new,lon_real,NCEP_vars{var},units,time,c_upper(var),c_lower(var))
                 
                 clear NCEP_data data nc
                 
             catch err
                 % this will occur should the .nc file not be accessible.
-                getReport(err,'extended');                
+                if strcmp(err.identifier,'MATLAB:imagesci:hdf5lib:fileOpenErr')
+                else
+                    getReport(err,'extended')
+                end
             end
         end
     end

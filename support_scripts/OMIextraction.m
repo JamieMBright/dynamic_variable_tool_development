@@ -156,7 +156,7 @@ for var=1:length(OMI_vars)
         % Make a gif of a single year
         gif_file = [store.raw_outputs_store,OMI_vars{var},filesep,OMI_prefix,'_',OMI_vars{var},'_',num2str(years(y)),'.gif'];
         if strcmp(OMI_vars{var},'nitrogen_dioxide')
-            SaveMapToGIF(gif_file,data,lats,lons,OMI_vars{var},units,time_datenum_daily,0.001,c_lower(var))
+            SaveMapToGIF(gif_file,OMI_data,lats,lons,OMI_vars{var},units,time_datenum_daily,0.001,c_lower(var))
         else
             SaveMapToGIF(gif_file,OMI_data,lats,lons,OMI_vars{var},units,time_datenum_daily,c_upper(var),c_lower(var))
         end

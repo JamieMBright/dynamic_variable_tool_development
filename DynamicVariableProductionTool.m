@@ -236,6 +236,12 @@ for y = 1:length(years)
     % longitude with which to be able to use the OMI
     OMIextraction(OMI_vars,OMI_raw_process,OMI_prefix,years,y,store)
     
+    %% Assimilate data of same variable from different sources
+    % DataAssimilation(store,raw_data_source_var,year,prefix_1,prefix_2,weight_1,weight_2);
+    DataAssimilation(store,'ozone',years(y),OMI_prefix,MODIS_prefix,0.75,0.25);
+    DataAssimilation(store,'precipitable_water',years(y),NCEP_prefix,MODIS_prefix,0.6,0.4);
+   
+    
 end
 
 

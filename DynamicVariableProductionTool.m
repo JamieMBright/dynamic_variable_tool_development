@@ -199,7 +199,7 @@ years=y1:y2;
 % The yearly variable files will be overwritten if the flag is set to true,
 % should the flag be false, the tool will skip this year and variable, with
 % the exception of the current year, whereby new data will be checked for.
-overwrite_flag=true;
+overwrite_flag=false;
 current_year=year(now);
 
 %% Trigger the main part of the function
@@ -237,7 +237,16 @@ for y = 1:length(years)
     OMIextraction(OMI_vars,OMI_raw_process,OMI_prefix,years,y,store)
     
     %% Assimilate data of same variable from different sources
-    % DataAssimilation(store,raw_data_source_var,year,prefix_1,prefix_2,weight_1,weight_2);
+    % ozone and precipitable water have two different input sources. For
+    % this reason, they will both be used to find a blended variable with
+    % certain weigthings. The OMI is given more precedent than MODIS where
+    % available due to superior spatial coverage, however, MODIS will be
+    % interpolated to matching resolution and given a 25% weighting. A
+    % similar principle is assigned to the precipitable water between NCEP
+    % and MODIS. MODIS is allowed a 40% weighting due to its decent spatial
+    % resolution in comparison to the NCEP, however, NCEP still gets a
+    % dominant weighting due to its complexity and gap free spatial
+    % coverage.
     DataAssimilation(store,'ozone',years(y),OMI_prefix,MODIS_prefix,0.75,0.25);
     DataAssimilation(store,'precipitable_water',years(y),NCEP_prefix,MODIS_prefix,0.6,0.4);
    

@@ -61,28 +61,28 @@ clear times_2s
 if weight_1==1
     
     filename=GetFilename(store,raw_data_source_var,year,'blended');
-    save(filename,'data_1')
+    save(filename,'data_1','-v7.3')
     filename=GetFilename(store,raw_data_source_var,year,'blended','confidence');
-    save(filename,'confidence_1')
+    save(filename,'confidence_1','-v7.3')
     filename=GetFilename(store,raw_data_source_var,year,'blended','latitudes');
-    save(filename,'lats_1')
+    save(filename,'lats_1','-v7.3')
     filename=GetFilename(store,raw_data_source_var,year,'blended','longitudes');
-    save(filename,'lons_1')
+    save(filename,'lons_1','-v7.3')
     filename=GetFilename(store,raw_data_source_var,year,'blended','times_datevec');
-    save(filename,'times_1')
+    save(filename,'times_1','-v7.3')
     
 elseif weight_2==1
     
     filename=GetFilename(store,raw_data_source_var,year,'blended');
-    save(filename,'data_2')
+    save(filename,'data_2','-v7.3')
     filename=GetFilename(store,raw_data_source_var,year,'blended','confidence');
-    save(filename,'confidence_2')
+    save(filename,'confidence_2','-v7.3')
     filename=GetFilename(store,raw_data_source_var,year,'blended','latitudes');
-    save(filename,'lats_2')
+    save(filename,'lats_2','-v7.3')
     filename=GetFilename(store,raw_data_source_var,year,'blended','longitudes');
-    save(filename,'lons_2')
+    save(filename,'lons_2','-v7.3')
     filename=GetFilename(store,raw_data_source_var,year,'blended','times_datevec');
-    save(filename,'times_2')
+    save(filename,'times_2','-v7.3')
     
 else
     
@@ -104,27 +104,27 @@ else
         
         if res_z1<res_z2
             filename=GetFilename(store,raw_data_source_var,year,'blended');
-            save(filename,'data_1')
+            save(filename,'data_1','-v7.3')
             filename=GetFilename(store,raw_data_source_var,year,'blended','confidence');
-            save(filename,'confidence_1')
+            save(filename,'confidence_1','-v7.3')
             filename=GetFilename(store,raw_data_source_var,year,'blended','latitudes');
-            save(filename,'lats_1')
+            save(filename,'lats_1','-v7.3')
             filename=GetFilename(store,raw_data_source_var,year,'blended','longitudes');
-            save(filename,'lons_1')
+            save(filename,'lons_1','-v7.3')
             filename=GetFilename(store,raw_data_source_var,year,'blended','times_datevec');
-            save(filename,'times_1')
+            save(filename,'times_1','-v7.3')
             
         else
             filename=GetFilename(store,raw_data_source_var,year,'blended');
-            save(filename,'data_2')
+            save(filename,'data_2','-v7.3')
             filename=GetFilename(store,raw_data_source_var,year,'blended','confidence');
-            save(filename,'confidence_2')
+            save(filename,'confidence_2','-v7.3')
             filename=GetFilename(store,raw_data_source_var,year,'blended','latitudes');
-            save(filename,'lats_2')
+            save(filename,'lats_2','-v7.3')
             filename=GetFilename(store,raw_data_source_var,year,'blended','longitudes');
-            save(filename,'lons_2')
+            save(filename,'lons_2','-v7.3')
             filename=GetFilename(store,raw_data_source_var,year,'blended','times_datevec');
-            save(filename,'times_2')
+            save(filename,'times_2','-v7.3')
         end
     else
         
@@ -233,23 +233,22 @@ else
             land_mask=reshape(landmask(LAT,LON),[length(lats),length(lons)]);
         end
         
-        new_data=REST2FillMissing(land_mask,lons,lats,new_data,true);
-        
+        new_data=REST2FillMissing(land_mask,lons,lats,new_data,false);
         
     end
     
     % save the data to file
     filename=GetFilename(store,raw_data_source_var,year,'blended');
-    save(filename,'new_data')
+    save(filename,'new_data','-v7.3')
     filename=GetFilename(store,raw_data_source_var,year,'blended','confidence');
-    save(filename,'new_data_confidence')
+    save(filename,'new_data_confidence','-v7.3')
     filename=GetFilename(store,raw_data_source_var,year,'blended','latitudes');
-    save(filename,'lats')
+    save(filename,'lats','-v7.3')
     filename=GetFilename(store,raw_data_source_var,year,'blended','longitudes');
-    save(filename,'lons')
+    save(filename,'lons','-v7.3')
     time=datevec(times_1);
     filename=GetFilename(store,raw_data_source_var,year,'blended','times_datevec');
-    save(filename,'time')
+    save(filename,'time','-v7.3')
     
     
     

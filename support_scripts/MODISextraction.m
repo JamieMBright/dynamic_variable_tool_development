@@ -167,15 +167,16 @@ for var=1:length(MODIS_vars)
             filename=GetFilename(store,save_str{s},years(y),MODIS_prefix,'longitudes');
             save(filename,'longitudes_HDF','-v7.3');
             
-            % Make a gif of a single year
-            gif_file = [store.raw_outputs_store,save_str{s},filesep,'MODIS_',save_str{s},'_',num2str(years(y)),'.gif'];
-            SaveMapToGIF(gif_file,eval(save_str{s}),latitudes_HDF,longitudes_HDF,save_str{s},units{s},time_datenum_daily,c_upper(s),c_lower(s))
-            
+            if y==(length(years)-1)
+                % Make a gif of a single year
+                gif_file = [store.raw_outputs_store,save_str{s},filesep,'MODIS_',save_str{s},'_',num2str(years(y)),'.gif'];
+                SaveMapToGIF(gif_file,eval(save_str{s}),latitudes_HDF,longitudes_HDF,save_str{s},units{s},time_datenum_daily,c_upper(s),c_lower(s))
+            end
         end
         % clear the excess data for memory conservation
         clear data ozone angstrom_exponent_b1 angstrom_exponent_b2 angstrom_turbidity_b1 angstrom_turbidity_b2 precipitable_water precipitable_water_all precipitable_water_gap_filled land_mask
     end
 end
 
-          
+
 end

@@ -122,12 +122,14 @@ for var=1:length(NCEP_vars)
                 save(filename,'lon_real','-v7.3');
                 
                 % Make a gif of a single year
-                gif_file = [store.raw_outputs_store,NCEP_vars{var},filesep,NCEP_prefix,'_',NCEP_vars{var},'_',num2str(years(y)),'.gif'];
-                if exist(gif_file,'file')
-                    delete(gif_file);
-                end
-                SaveMapToGIF(gif_file,NCEP_data,lat_new,lon_real,NCEP_vars{var},units,time,c_upper(var),c_lower(var))
                 
+                if y==(length(years)-1)
+                    gif_file = [store.raw_outputs_store,NCEP_vars{var},filesep,NCEP_prefix,'_',NCEP_vars{var},'_',num2str(years(y)),'.gif'];
+                    if exist(gif_file,'file')
+                        delete(gif_file);
+                    end
+                    SaveMapToGIF(gif_file,NCEP_data,lat_new,lon_real,NCEP_vars{var},units,time,c_upper(var),c_lower(var))
+                end
                 clear NCEP_data data nc
                 
             catch err

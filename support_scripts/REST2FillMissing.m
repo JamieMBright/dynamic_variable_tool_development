@@ -1,3 +1,8 @@
+% Gap filling tool.
+% Created by Jamie Bright
+% ----------------------------------------------------------------------
+% This is a geospatial gap filling technique. 
+%
 function filled_data=REST2FillMissing(land_mask,longitudes_HDF,latitudes_HDF,data_main,plot_flag)
 
 if ~exist('plot_flag','var')

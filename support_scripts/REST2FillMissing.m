@@ -16,8 +16,9 @@ if nansum(nansum(nansum(isnan(data_main))))>=1
     dimensions=length(size(data_main));
     if dimensions==3
         loops=size(data_main,3);
-        plot_flag=false;
-        warning('Turning plot flag off for 3D matrix')
+        if plot_flag==true
+            disp('Warning: plots will only be made for the first time step of 3D matrix')
+        end
     else
         loops=1;
     end
@@ -64,11 +65,11 @@ if nansum(nansum(nansum(isnan(data_main))))>=1
             data_raw=data;
             data_filled=data_raw;
             data_filled(data_nan_inds)=missing_data;
-            if plot_flag==true
+            if (plot_flag==true && i==1)
                 data_step_2=data_filled;
             end
             
-            
+            if sum(sum(isnan(data_filled)))~=numel(data_filled)
             while nansum(nansum(nansum(isnan(data_filled))))>1
                 % repeat the process, but ignore the land mask.
                 data_nan_inds=find(isnan(data_filled));
@@ -88,8 +89,13 @@ if nansum(nansum(nansum(isnan(data_main))))>=1
                 missing_data=nansum(nan_fill.*weighting,2)./nansum(weighting,2);
                 data_filled(data_nan_inds)=missing_data;
             end
+            else
+                % this is where a temporal or fixed assumptions must be
+                % made. In cases where the full data value is all NaN.
+                % Perhaps use a fixed value as recommended by Gueymard?
+            end
             
-            if plot_flag==true
+            if (plot_flag==true && i==1)
                 data_step_3=data_filled;
             end
             
@@ -115,7 +121,7 @@ if nansum(nansum(nansum(isnan(data_main))))>=1
             end
             
         end
-        if plot_flag==true
+        if (plot_flag==true && i==1)
             %% THIS WILL PLOT A PROGRESSION OF THE METHOD THAT FILLS
             
             figure('Name','Progression of gap filling')

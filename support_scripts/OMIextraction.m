@@ -135,6 +135,7 @@ for var=1:length(OMI_vars)
                 % errors should be logged.
                 if strcmp(err.identifier,'MATLAB:imagesci:hdf5lib:fileOpenErr')
                     data=zeros(720,1440).*NaN;
+                    data_confidence=zeros(720,1440);
                 else
                     getReport(err,'extended')
                 end
@@ -162,12 +163,14 @@ for var=1:length(OMI_vars)
         filename=GetFilename(store,OMI_vars{var},years(y),OMI_prefix,'longitudes');
         save(filename,'lons','-v7.3');
         
-        % Make a gif of a single year
-        gif_file = [store.raw_outputs_store,OMI_vars{var},filesep,OMI_prefix,'_',OMI_vars{var},'_',num2str(years(y)),'.gif'];
-        if strcmp(OMI_vars{var},'nitrogen_dioxide')
-            SaveMapToGIF(gif_file,OMI_data,lats,lons,OMI_vars{var},units,time_datenum_daily,0.001,c_lower(var))
-        else
-            SaveMapToGIF(gif_file,OMI_data,lats,lons,OMI_vars{var},units,time_datenum_daily,c_upper(var),c_lower(var))
+        if y==(length(years)-1)
+            % Make a gif of a single year
+            gif_file = [store.raw_outputs_store,OMI_vars{var},filesep,OMI_prefix,'_',OMI_vars{var},'_',num2str(years(y)),'.gif'];
+            if strcmp(OMI_vars{var},'nitrogen_dioxide')
+                SaveMapToGIF(gif_file,OMI_data,lats,lons,OMI_vars{var},units,time_datenum_daily,0.001,c_lower(var))
+            else
+                SaveMapToGIF(gif_file,OMI_data,lats,lons,OMI_vars{var},units,time_datenum_daily,c_upper(var),c_lower(var))
+            end
         end
         % clear unwanted data for space save
         clear OMI_data land_mask data

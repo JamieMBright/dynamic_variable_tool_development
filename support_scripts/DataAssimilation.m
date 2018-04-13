@@ -6,8 +6,8 @@
 % The principle is that data sources will be assigned a weight depending on
 % their performanve at validation sites.
 
-function DataAssimilation(store,raw_data_source_var,year,prefix_1,prefix_2,weight_1,weight_2)
-disp(['Assimilating data for ',raw_data_source_var,' between ',prefix_1,' and ',prefix_2])
+function DataAssimilation(store,raw_data_source_var,year,prefix_1,prefix_2,blended_prefix,weight_1,weight_2)
+disp(['Assimilating ',num2str(year),' data for ',raw_data_source_var,' between ',prefix_1,' and ',prefix_2])
 
 if (~exist('weight_1','var') || ~exist('weight_2','var'))
     weight_1=0.5;
@@ -60,28 +60,28 @@ clear times_2s
 
 if weight_1==1
     
-    filename=GetFilename(store,raw_data_source_var,year,'blended');
+    filename=GetFilename(store,raw_data_source_var,year,blended_prefix);
     save(filename,'data_1','-v7.3')
-    filename=GetFilename(store,raw_data_source_var,year,'blended','confidence');
+    filename=GetFilename(store,raw_data_source_var,year,blended_prefix,'confidence');
     save(filename,'confidence_1','-v7.3')
-    filename=GetFilename(store,raw_data_source_var,year,'blended','latitudes');
+    filename=GetFilename(store,raw_data_source_var,year,blended_prefix,'latitudes');
     save(filename,'lats_1','-v7.3')
-    filename=GetFilename(store,raw_data_source_var,year,'blended','longitudes');
+    filename=GetFilename(store,raw_data_source_var,year,blended_prefix,'longitudes');
     save(filename,'lons_1','-v7.3')
-    filename=GetFilename(store,raw_data_source_var,year,'blended','times_datevec');
+    filename=GetFilename(store,raw_data_source_var,year,blended_prefix,'times_datevec');
     save(filename,'times_1','-v7.3')
     
 elseif weight_2==1
     
-    filename=GetFilename(store,raw_data_source_var,year,'blended');
+    filename=GetFilename(store,raw_data_source_var,year,blended_prefix);
     save(filename,'data_2','-v7.3')
-    filename=GetFilename(store,raw_data_source_var,year,'blended','confidence');
+    filename=GetFilename(store,raw_data_source_var,year,blended_prefix,'confidence');
     save(filename,'confidence_2','-v7.3')
-    filename=GetFilename(store,raw_data_source_var,year,'blended','latitudes');
+    filename=GetFilename(store,raw_data_source_var,year,blended_prefix,'latitudes');
     save(filename,'lats_2','-v7.3')
-    filename=GetFilename(store,raw_data_source_var,year,'blended','longitudes');
+    filename=GetFilename(store,raw_data_source_var,year,blended_prefix,'longitudes');
     save(filename,'lons_2','-v7.3')
-    filename=GetFilename(store,raw_data_source_var,year,'blended','times_datevec');
+    filename=GetFilename(store,raw_data_source_var,year,blended_prefix,'times_datevec');
     save(filename,'times_2','-v7.3')
     
 else
@@ -103,27 +103,27 @@ else
         disp(' taking the highest temporal resolution as weighting=1')
         
         if res_z1<res_z2
-            filename=GetFilename(store,raw_data_source_var,year,'blended');
+            filename=GetFilename(store,raw_data_source_var,year,blended_prefix);
             save(filename,'data_1','-v7.3')
-            filename=GetFilename(store,raw_data_source_var,year,'blended','confidence');
+            filename=GetFilename(store,raw_data_source_var,year,blended_prefix,'confidence');
             save(filename,'confidence_1','-v7.3')
-            filename=GetFilename(store,raw_data_source_var,year,'blended','latitudes');
+            filename=GetFilename(store,raw_data_source_var,year,blended_prefix,'latitudes');
             save(filename,'lats_1','-v7.3')
-            filename=GetFilename(store,raw_data_source_var,year,'blended','longitudes');
+            filename=GetFilename(store,raw_data_source_var,year,blended_prefix,'longitudes');
             save(filename,'lons_1','-v7.3')
-            filename=GetFilename(store,raw_data_source_var,year,'blended','times_datevec');
+            filename=GetFilename(store,raw_data_source_var,year,blended_prefix,'times_datevec');
             save(filename,'times_1','-v7.3')
             
         else
-            filename=GetFilename(store,raw_data_source_var,year,'blended');
+            filename=GetFilename(store,raw_data_source_var,year,blended_prefix);
             save(filename,'data_2','-v7.3')
-            filename=GetFilename(store,raw_data_source_var,year,'blended','confidence');
+            filename=GetFilename(store,raw_data_source_var,year,blended_prefix,'confidence');
             save(filename,'confidence_2','-v7.3')
-            filename=GetFilename(store,raw_data_source_var,year,'blended','latitudes');
+            filename=GetFilename(store,raw_data_source_var,year,blended_prefix,'latitudes');
             save(filename,'lats_2','-v7.3')
-            filename=GetFilename(store,raw_data_source_var,year,'blended','longitudes');
+            filename=GetFilename(store,raw_data_source_var,year,blended_prefix,'longitudes');
             save(filename,'lons_2','-v7.3')
-            filename=GetFilename(store,raw_data_source_var,year,'blended','times_datevec');
+            filename=GetFilename(store,raw_data_source_var,year,blended_prefix,'times_datevec');
             save(filename,'times_2','-v7.3')
         end
     else
@@ -200,12 +200,12 @@ else
         % and sometimes 0.
         confidence_1(isnan(confidence_1))=0;
         confidence_2(isnan(confidence_2))=0;
-                
+        
         %replace the confidence with the weighting
         confidence_1(confidence_1==1)=weight_1;
         confidence_2(confidence_2==1)=weight_2;
         
-        % when there is only 1 value available (e.g. MODIS is available for 
+        % when there is only 1 value available (e.g. MODIS is available for
         % that pixel but NCEP is not), only that value that must be used
         % and so a weight of 1 must be given.
         confidence_1(confidence_1~=0 & confidence_2==0)=1;
@@ -215,8 +215,8 @@ else
         % 1 and data 2, we can remove them for simple multiplcation and sum
         data_1(isnan(data_1))=0;
         data_2(isnan(data_2))=0;
-        %apply the weigthings stored in the confidence vars to the data 
-        % stored in data vars. then return previous NaNs back to Nan value 
+        %apply the weigthings stored in the confidence vars to the data
+        % stored in data vars. then return previous NaNs back to Nan value
         new_data=data_1.*confidence_1+data_2.*confidence_2;
         clear data_1 data_2
         new_data_confidence=confidence_1+confidence_2;
@@ -224,7 +224,7 @@ else
         new_data_confidence(new_data_confidence>0)=1;
         new_data_confidence=int8(new_data_confidence);
         new_data(new_data_confidence==0)=NaN;
-                
+        
         % perform the gap filling
         if ~exist('land_mask','var')
             [LON,LAT]=meshgrid(lons,lats);
@@ -235,20 +235,21 @@ else
         
         new_data=REST2FillMissing(land_mask,lons,lats,new_data,false);
         
+        % save the data to file
+        filename=GetFilename(store,raw_data_source_var,year,blended_prefix);
+        save(filename,'new_data','-v7.3')
+        filename=GetFilename(store,raw_data_source_var,year,blended_prefix,'confidence');
+        save(filename,'new_data_confidence','-v7.3')
+        filename=GetFilename(store,raw_data_source_var,year,blended_prefix,'latitudes');
+        save(filename,'lats','-v7.3')
+        filename=GetFilename(store,raw_data_source_var,year,blended_prefix,'longitudes');
+        save(filename,'lons','-v7.3')
+        time=datevec(times_1);
+        filename=GetFilename(store,raw_data_source_var,year,blended_prefix,'times_datevec');
+        save(filename,'time','-v7.3')
+        
     end
     
-    % save the data to file
-    filename=GetFilename(store,raw_data_source_var,year,'blended');
-    save(filename,'new_data','-v7.3')
-    filename=GetFilename(store,raw_data_source_var,year,'blended','confidence');
-    save(filename,'new_data_confidence','-v7.3')
-    filename=GetFilename(store,raw_data_source_var,year,'blended','latitudes');
-    save(filename,'lats','-v7.3')
-    filename=GetFilename(store,raw_data_source_var,year,'blended','longitudes');
-    save(filename,'lons','-v7.3')
-    time=datevec(times_1);
-    filename=GetFilename(store,raw_data_source_var,year,'blended','times_datevec');
-    save(filename,'time','-v7.3')
     
     
     

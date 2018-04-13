@@ -33,7 +33,7 @@ if overwrite_flag==false
         for i=1:length(MODIS_vars)
             
             if strcmp(MODIS_vars{i},'aerosol_optical_depth')
-                AOD_vars={'angstrom_exponent_b1','angstrom_exponent_b2','angstrom_turbidity_b1','angstrom_turbidity_b2'};
+                AOD_vars={'angstrom_exponent_b1','angstrom_exponent_b2','angstrom_turbidity_b1','angstrom_turbidity_b2','AOD700'};
                 AOD_test=zeros(length(AOD_vars),1);
                 for j=1:length(AOD_vars)
                     filename=GetFilename(store,AOD_vars{j},year,MODIS_prefix);

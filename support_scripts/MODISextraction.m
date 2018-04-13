@@ -25,15 +25,18 @@ for var=1:length(MODIS_vars)
                 angstrom_exponent_b2_confidence=int8(zeros(180,360,length(time_datenum_daily)));
                 angstrom_turbidity_b1_confidence=int8(zeros(180,360,length(time_datenum_daily)));
                 angstrom_turbidity_b2_confidence=int8(zeros(180,360,length(time_datenum_daily)));
+                AOD700_confidence=int8(zeros(180,360,length(time_datenum_daily)));
                 angstrom_exponent_b1=zeros(180,360,length(time_datenum_daily)).*NaN;
                 angstrom_exponent_b2=zeros(180,360,length(time_datenum_daily)).*NaN;
                 angstrom_turbidity_b1=zeros(180,360,length(time_datenum_daily)).*NaN;
                 angstrom_turbidity_b2=zeros(180,360,length(time_datenum_daily)).*NaN;
-                units={'','','',''};
-                c_lower=[0 0 0 0];
-                c_upper=[2.5 2.5 1.1 1.1];
+                AOD700=zeros(180,360,length(time_datenum_daily)).*NaN;
+                
+                units={'','','','',''};
+                c_lower=[0 0 0 0 0];
+                c_upper=[2.5 2.5 1.1 1.1 5];
                 % set the save string
-                save_str={'angstrom_exponent_b1','angstrom_exponent_b2','angstrom_turbidity_b1','angstrom_turbidity_b2'};
+                save_str={'angstrom_exponent_b1','angstrom_exponent_b2','angstrom_turbidity_b1','angstrom_turbidity_b2','AOD700'};
                 
             case 'ozone'
                 MODIS_datafields={'Total_Ozone_Mean'};
@@ -89,15 +92,17 @@ for var=1:length(MODIS_vars)
                     % inside the PostProcessing function. Also within
                     % there are the gapfilling methods
                     if ~isempty(data)
-                        [a_b1,a_b2,b_b1,b_b2,a_b1_c,a_b2_c,b_b1_c,b_b2_c]=PostProcessingOfModisAOD(data,latitudes_HDF,longitudes_HDF,land_mask);
+                        [a_b1,a_b2,b_b1,b_b2,a_b1_c,a_b2_c,b_b1_c,b_b2_c,aod700,aod700_c]=PostProcessingOfModisAOD(data,latitudes_HDF,longitudes_HDF,land_mask);
                         angstrom_exponent_b1(:,:,d)=a_b1;
                         angstrom_exponent_b2(:,:,d)=a_b2;
                         angstrom_turbidity_b1(:,:,d)=b_b1;
                         angstrom_turbidity_b2(:,:,d)=b_b2;
+                        AOD700(:,:,d)=aod700;
                         angstrom_exponent_b1_confidence(:,:,d)=a_b1_c;
                         angstrom_exponent_b2_confidence(:,:,d)=a_b2_c;
                         angstrom_turbidity_b1_confidence(:,:,d)=b_b1_c;
                         angstrom_turbidity_b2_confidence(:,:,d)=b_b2_c;
+                        AOD700_confidence(:,:,d)=aod700_c;
                     end
                     
                 case 'ozone'
@@ -174,7 +179,7 @@ for var=1:length(MODIS_vars)
             end
         end
         % clear the excess data for memory conservation
-        clear data ozone angstrom_exponent_b1 angstrom_exponent_b2 angstrom_turbidity_b1 angstrom_turbidity_b2 precipitable_water precipitable_water_all precipitable_water_gap_filled land_mask
+        clear data ozone angstrom_exponent_b1 angstrom_exponent_b2 angstrom_turbidity_b1 angstrom_turbidity_b2 precipitable_water precipitable_water_all precipitable_water_gap_filled land_mask AOD700
     end
 end
 

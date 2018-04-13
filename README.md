@@ -1,4 +1,4 @@
-# dynamic_variable_tool_development
+### dynamic_variable_tool_development
 This tool is a method to gather raw satellite and renalysis data and 
 convert it into easy to use spatio-temporal variables with intended use 
 in solar clear-sky irradiance modelling.
@@ -9,9 +9,8 @@ at least 1 deg and 1 day spatio-temporal resolution.
 The dynmaic variable extraction tool takes a given group of longitude and
 latitude pairs and a time-series, then returns the data in a struct.
 
-========================================================================
-                              Information
-========================================================================
+
+## Information
 Started: 13/03/2018
 Author: Dr Jamie M. Bright
 
@@ -36,10 +35,8 @@ Prefered Citation: Bright, J.M. et al. 2018. Global clear-sky irradiance
 model validation using dynamic variables from NCEP, MODIS and OMI.
 Solar Energy. xx pp xxx-xxx.
 
-========================================================================
-                Raw variables from satellite and NWP
-========================================================================
-
+## Raw variables from satellite and NWP
+```
  +---------------------------------------------------------------------+
  | Variable        Source              Conversion      Validation      |
  +---------------------------------------------------------------------+
@@ -51,12 +48,11 @@ Solar Energy. xx pp xxx-xxx.
  | Nitrgen di.     OMI                 Y               x               |
  | Precip. Water   MODIS, NCEP         Y               AERONET/BSRN    |
  +---------------------------------------------------------------------+
+```
 
+## Where to download?
 
-========================================================================
-                         Where to download?
-========================================================================
-                                MODIS
+# MODIS
 MODIS Aqua and Terra images can be obtaind from the ladsweb ftp and http
 server. A programatic approach is to use the DownloadWithWget.m function
 provided in the utility functions.
@@ -70,7 +66,7 @@ This is difficult to programatically download due to the
 non-predictability of the url end. An FTP connection is ideal. This tool
 assumes the native file structure of the MOD08_D3 and MYD08_D3 setup.
 
-                                NCEP
+# NCEP
 NCEP has the simplest file structure and the download capability is
 provided programatically within this tool. Firstly, however, cygwin must
 be installed and activating the web wget options on install and then
@@ -93,7 +89,7 @@ called "pwat-yyyy.nc", "rh3-yyyy.nc", "pres.sfc.yyyy.nc" and
 DownloadAllReanalysisData.m script not be utilised.
 This can be modified, however, would require some debugging.
 
-                                 OMI
+# OMI
 The OMI data can be programatically downloaded using the cygwin and wget
 operability as mentioned before. Firstly, however, the user must register
 with the NNASA GES DISC https://disc.gsfc.nasa.gov/data-access to obtain
@@ -126,9 +122,9 @@ above commands will satisfy this and place them all in F:/AURA/.
 This is not programatically called within the code, and so is a
 prepriotroy step before this extraction can be performed.
 
-========================================================================
-                          Input user requirements
-========================================================================
+
+ ## Input user requirements
+
 The user must define the directories of where all the raw data is stored.
 Firstly by setting the drive root, and then by ensuring the pathing.
 The user must also specify the years that will be produced.
@@ -136,9 +132,9 @@ The user must also specify an overwirte flag, a default assumption is
 that only unique years will be produced, with exception of the current
 year, the function will check for new data and then -append the new.
 
-========================================================================
-                          Output data sets
-========================================================================
+
+## Output data sets
+
 There are many clear-sky irradiance models that can be used. The
 intention is to provide a dynamic variable for each of their inputs.
 
@@ -159,5 +155,3 @@ Furthermore, each variable comes with a latitude, longitude and time
 indexing for easy use.
 
 Each variable has a set of data, confidence, lat, lon, time for each year.
-
-========================================================================

@@ -1,0 +1,13 @@
+REDISTRIBUTION NOTES
+
+This is a redistributed package with minor modifications by Jamie Bright, 2018.
+
+Please see http://code.google.com/p/nctoolbox/ to https://github.com/nctoolbox/nctoolbox/wiki/Documentation for original version.
+Copyright 2013 B.Schlining, A.Crosby, R.Signell
+
+
+There have been only few minor modifications to the original source inside the ncgeoataset.m function
+These changes affect no fundamentals and are:
+
+1) the removal of all instances of "echo on"
+2) the removal of all instances of the use 'warning(...)'

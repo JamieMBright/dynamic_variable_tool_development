@@ -3,20 +3,29 @@
 % using a shape preserving piecewise cupic interpolation between the
 % desired time_series input and the time indexing of the raw dynamic
 % variables. 
-
-
-% Intputs 
 %
+% ------------------------------------------------------------------------
+%                              Inputs 
+% ------------------------------------------------------------------------
 % latitude - single or many latitudes (90=N -90=S)
+%
 % longitude - single or many longitudes (0=London, -180=W 180=E)
+%
 % time_series - time series of required output same for all.
+% 
 % extraction_variables - a cell array of strings of the varaible desired. 
 %                         default is all variables. The full list is below
-% dynamic_variables_store - this is either the store used in the production
-%                           of the tool, or otherwise must be defined as
-%                           dynamic_variables_store.raw_outputs_store='F:/';
 % 
-% Variables for extraction:
+% dynamic_variables_store - this is the file path of where the variables
+%                    are all stored. If the DynamicVariableProductionTool 
+%                    was used, this should be 'F:\dynamic_data_summaries\';
+%
+% ------------------------------------------------------------------------
+%                     Variables for extraction
+% ------------------------------------------------------------------------
+% Selected variables can be input, or leave blank to default to all
+% e.g. selected_extraction_variables={'pressure','ozone'};
+%
 %  'angstrom_exponent_b1'
 %  'angstrom_exponent_b2'
 %  'angstrom_turbidity_b1'
@@ -26,23 +35,44 @@
 %  'precipitable_water'
 %  'pressure'
 %  'relative_humidity'
-%  'temperature_2m'
+%  'temperature_2m'  
+% 
+% ------------------------------------------------------------------------
+%                           Example usage
+% ------------------------------------------------------------------------
+% latitudes=[-35.5151,65,0.04848];
+% longitudes=[-70.545,5.3,140.07];
+% % a 10-minute resolution time series from 01/01/2002 to 01/05/2004
+% time_series=datenum('20020101','yyyymmdd'):1/144:datenum('20040501','yyyymmdd');
+% dynamic_variables_store=['F:',filesep,'dynamic_data_summaries',filesep];
+% % note that the extraction_variables will default to all if not entered
+% % extraction_variables={'nitrogen_dioxide'};
+% if exist('extraction_variables','var')
+%     dynamic_variables_struct=ExtractDynamicVariables(latitudes,longitudes,time_series,dynamic_variables_store,extraction_variables);
+% else
+%     dynamic_variables_struct=ExtractDynamicVariables(latitudes,longitudes,time_series,dynamic_variables_store);
+% end
+% 
+%
+%
+%
+%
 
 
-function dynamic_variables_struct=ExtractDynamicVariables(latitudes,longitudes,time_series,extraction_variables,dynamic_variables_store)
-
+function dynamic_variables_struct=ExtractDynamicVariables(latitudes,longitudes,time_series,dynamic_variables_store,extraction_variables)
+try
 % safety checks
 list_of_variables={'angstrom_exponent_b1','angstrom_exponent_b2','angstrom_turbidity_b1','angstrom_turbidity_b2','nitrogen_dioxide','ozone','precipitable_water','pressure','relative_humidity','temperature_2m'};
-raw_data_source_prefixes={'MODIS','MODIS','OMI','blended','blended','NCEP','NCEP','NCEP'};
+raw_data_source_prefixes={'MODIS','MODIS','MODIS','MODIS','OMI','blended','blended','NCEP','NCEP','NCEP'};
 
-if ~iscell(extraction_variables)
+if ~exist('extraction_variables','var')
+    extraction_variables=list_of_variables;
+elseif ~iscell(extraction_variables)
     error('Input extraction_variable must be a string within a cell, e.g. {''ozone''}')
 end
 
-if ~exist('variables','var')
-    extraction_variables=list_of_variables;
-elseif min(strcmpi(list_of_variables,extraction_variables))==0
-    error('Input extraction_variable does not exist')
+if sum(strcmpi(list_of_variables,extraction_variables))~=length(extraction_variables)
+    error('One or more inputs in extraction_variable are not compatible, check spelling.')
 end
 
 if length(latitudes)~=length(longitudes)
@@ -91,21 +121,21 @@ for var=1:length(extraction_variables)
         % the extraction of that variable
         datas=load(dat_filename);
         field=fieldnames(datas);
-        data=eval(['datas.',field]);
+        data=eval(['datas.',field{1}]);
 %         confs=load(conf_filename);
 %         field=fieldnames(confs);
 %         conf=eval(['confs.',field]);
         times=load(time_filename);
         field=fieldnames(times);
-        time=eval(['times.',field]);
+        time=eval(['times.',field{1}]);
         time=datenum(time);
         time=reshape(time,[length(time),1]);
         latss=load(lat_filename);
         field=fieldnames(latss);
-        lats=eval(['latss.',field]);
+        lats=eval(['latss.',field{1}]);
         lonss=load(lon_filename);
         field=fieldnames(lonss);
-        lons=eval(['lonss.',field]);
+        lons=eval(['lonss.',field{1}]);
         
         % find the appropriate time inds
         this_years_times=time_series(time_datevecs(:,1)==unique_years(y));
@@ -127,18 +157,26 @@ for var=1:length(extraction_variables)
         % it would be nice to vectorise this, but cannot think of a way to
         % index data using the spatial inds (which is a single value for a
         % 2D lookup) to reference entire time series.
-        var_data=zeros(length(this_years_times),length(latitudes));
+        var_data=zeros(length(this_years_times),length(latitudes)).*NaN;
         for loc=1:length(latitudes)
             % perform an interpolation as well as the row,col,time ind
             % extraction.
-            var_data(:,loc)=interp1(time,squeeze(data(row_ind(loc),col_ind(loc),:)),this_years_times,'pchip');
+            %supress NaN warnings by wrapping inside an evalc
+            data_for_interp=squeeze(data(row_ind(loc),col_ind(loc),:));
+            nan_inds=isnan(data_for_interp);
+            % there must be at least 2 datapoints to perform an interp
+            if sum(nan_inds)+2<length(data_for_interp) 
+            evalc('var_data(:,loc)=interp1(time,data_for_interp,this_years_times,''pchip'');');
+            end
+            var_data(nan_inds==1,loc)=NaN;
         end
         
         % populate the output struct
         eval(['dynamic_variables_struct.',extraction_variables{var},'(find(time_datevecs(:,1)==unique_years(y)),:)=var_data;']);
     end
 end
-dynamic_variables_struct
-
+catch err
+    getReport(err,'extended')
+end
 end
 

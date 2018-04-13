@@ -98,23 +98,27 @@ DATA ARCHIVE in your accoutn settings.
 Once the account has been set up, a proprietry step is to create a
 cookies and permissions file entering the following into the Cygwin
 terminal and replacing USERNAME and PASSWORD with your details:
+```
    cd ~
    touch .netrc
    echo "machine urs.earthdata.nasa.gov login USERNAME password PASSWORD" >> .netrc
    chmod 0600 .netrc
    touch .urs_cookies
+```
 After this, the following commands will download all the appropriate
 files to the same directory for NO2 and O3:
-
+```
    wget --load-cookies ~/.urs_cookies --save-cookies ~/.urs_cookies
      --keep-session-cookies -r --level=2 -c -nH -nd -np -P F:/AURA/  ...
      --accept *.he5 --no-host-directories --cut-dirs=2   ...
      "https://acdisc.gesdisc.eosdis.nasa.gov/data/Aura_OMI_Level3/OMNO2d.003/"
-
+```
+```
    wget --load-cookies ~/.urs_cookies --save-cookies ~/.urs_cookies
      --keep-session-cookies -r --level=2 -c -nH -nd -np -P F:/AURA/  ...
      --accept *.he5 --no-host-directories --cut-dirs=2   ...
      "https://acdisc.gsfc.nasa.gov/data/Aura_OMI_Level3/OMDOAO3e.003/"
+ ```
 
 Where F:/AURA/ is the location the same as set in the store variable. The
 file structure locally is all located inside the same directory, the
@@ -138,16 +142,16 @@ year, the function will check for new data and then -append the new.
 There are many clear-sky irradiance models that can be used. The
 intention is to provide a dynamic variable for each of their inputs.
 
-Angstrom_turbidity_b1     - the Angstrom Turbidity at band 1(beta)
-Angstrom_turbidity_b2     - the Angstrom Turbidity at band 2(beta)
-Angstrom_exponent_b1      - the Angtstrom exponent at band 1 (alpha)
-Angstrom_exponent_b2      - the Angtstrom exponent at band 2 (alpha)
-Pressure                  - the surface level pressure (hPa)
-Relative_humidity         - the relative humidity at surface
-Precipitable_water        - the precipitable water column (cm)
-Ozone                     - the column ozone amount (atm-cm)
-Nitrogen Dioxide          - the column nitrogen amount (atm-cm)
-AOD700                    - the aeorosol optical depth at 700nm (dim.) 
+- Angstrom_turbidity_b1     - the Angstrom Turbidity at band 1(beta)
+- Angstrom_turbidity_b2     - the Angstrom Turbidity at band 2(beta)
+- Angstrom_exponent_b1      - the Angtstrom exponent at band 1 (alpha)
+- Angstrom_exponent_b2      - the Angtstrom exponent at band 2 (alpha)
+- Pressure                  - the surface level pressure (hPa)
+- Relative_humidity         - the relative humidity at surface
+- Precipitable_water        - the precipitable water column (cm)
+- Ozone                     - the column ozone amount (atm-cm)
+- Nitrogen Dioxide          - the column nitrogen amount (atm-cm)
+- AOD700                    - the aeorosol optical depth at 700nm (dim.) 
 
 Each variable comes with a X_confidence matrix which indicates which
 values are spatially interpolated and which are derived from measurements.

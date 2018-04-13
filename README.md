@@ -7,6 +7,7 @@ The dynmaic variable extraction tool takes a given group of longitude and latitu
 
 ## Information
 **Started:** 13/03/2018
+
 **Author:** Dr Jamie M. Bright
 
 **Affiliation:** The Australian National University, Fenner School.

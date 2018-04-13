@@ -65,7 +65,7 @@
 % The NCEP variables must be within the store varaible defined directory
 % and placed inside the appropriate directories called "precipitable_water"
 % "pressure", "relative_humidity" and "temperature_2m". The files must be
-% called "pwat-yyyy.nc", "rh3-yyyy.nc", "pres.sfc.yyyy.nc" and 
+% called "pwat-yyyy.nc", "rh3-yyyy.nc", "pres.sfc.yyyy.nc" and
 % "tamb-yyyy.nc" respectively for each should the
 % DownloadAllReanalysisData.m script not be utilised.
 % This can be modified, however, would require some debugging.
@@ -86,13 +86,13 @@
 %    touch .urs_cookies
 % After this, the following commands will download all the appropriate
 % files to the same directory for NO2 and O3:
-%                        
-%    wget --load-cookies ~/.urs_cookies --save-cookies ~/.urs_cookies 
+%
+%    wget --load-cookies ~/.urs_cookies --save-cookies ~/.urs_cookies
 %      --keep-session-cookies -r --level=2 -c -nH -nd -np -P F:/AURA/  ...
 %      --accept *.he5 --no-host-directories --cut-dirs=2   ...
 %      "https://acdisc.gesdisc.eosdis.nasa.gov/data/Aura_OMI_Level3/OMNO2d.003/"
 
-%    wget --load-cookies ~/.urs_cookies --save-cookies ~/.urs_cookies 
+%    wget --load-cookies ~/.urs_cookies --save-cookies ~/.urs_cookies
 %      --keep-session-cookies -r --level=2 -c -nH -nd -np -P F:/AURA/  ...
 %      --accept *.he5 --no-host-directories --cut-dirs=2   ...
 %      "https://acdisc.gsfc.nasa.gov/data/Aura_OMI_Level3/OMDOAO3e.003/"
@@ -174,6 +174,8 @@ init_directory(store.raw_outputs_store);
 MODIS_vars={'aerosol_optical_depth','ozone','precipitable_water'};
 NCEP_vars={'pressure','temperature_2m','precipitable_water','relative_humidity'};
 OMI_vars={'ozone','nitrogen_dioxide'};
+blended_vars={'ozone','precipitable_water'};
+blended_weight=[0.75,0.25;0.6,0.4];
 
 %% Output variables
 out_variables={'pressure','relative_humidity','temperature_2m','angstrom_turbidity_b1','angstrom_turbidity_b2','angstrom_exponent_b1','angstrom_exponent_b2','ozone','nitrogen_dioxide','precipitable_water'};%,'AOD_broadband','AOD_b1','AOD_b2','lambda_b1','lambda_b2','ground_albedo'};
@@ -185,6 +187,7 @@ end
 MODIS_prefix='MODIS';
 NCEP_prefix='NCEP';
 OMI_prefix='OMI';
+blended_prefix='blended';
 
 %% Set time requirements
 % A fundamental component to the main function is the year that is
@@ -199,7 +202,7 @@ years=y1:y2;
 % The yearly variable files will be overwritten if the flag is set to true,
 % should the flag be false, the tool will skip this year and variable, with
 % the exception of the current year, whereby new data will be checked for.
-overwrite_flag=false;
+overwrite_flag=input('Overwrite? (true/false): ');
 current_year=year(now);
 
 %% Trigger the main part of the function
@@ -213,7 +216,7 @@ for y = 1:length(years)
     % and return process flag indicating whether or not some raw data
     % should be processed. The binary outputs correspond to the *_vars
     % variable that lists the type of data needed
-    [MODIS_raw_process,NCEP_raw_process,OMI_raw_process]=ProcessRawDataCalibration(overwrite_flag,current_year,years(y),MODIS_vars,NCEP_vars,OMI_vars,store,MODIS_prefix,NCEP_prefix,OMI_prefix);
+    [MODIS_raw_process,NCEP_raw_process,OMI_raw_process,blended_raw_process]=ProcessRawDataCalibration(overwrite_flag,current_year,years(y),MODIS_vars,NCEP_vars,OMI_vars,blended_vars,store,MODIS_prefix,NCEP_prefix,OMI_prefix,blended_prefix);
     
     %% MODIS extraction
     % MODIS files store a large amount of variables per file, this differes
@@ -247,30 +250,12 @@ for y = 1:length(years)
     % resolution in comparison to the NCEP, however, NCEP still gets a
     % dominant weighting due to its complexity and gap free spatial
     % coverage.
-    DataAssimilation(store,'ozone',years(y),OMI_prefix,MODIS_prefix,0.75,0.25);
-    DataAssimilation(store,'precipitable_water',years(y),NCEP_prefix,MODIS_prefix,0.6,0.4);
-   
+    if blended_raw_process(1)==1
+        DataAssimilation(store,'ozone',years(y),OMI_prefix,MODIS_prefix,blended_prefix,0.75,0.25);
+    end
+    if blended_raw_process(2)==1
+        DataAssimilation(store,'precipitable_water',years(y),NCEP_prefix,MODIS_prefix,blended_prefix,0.6,0.4);
+    end
     
 end
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

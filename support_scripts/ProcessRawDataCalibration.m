@@ -16,7 +16,7 @@
 % the whole of the current year, as it will make a check for new data.
 %% MODIS
 % Decision about whether to perform this year or not
-function [MODIS_raw_process,NCEP_raw_process,OMI_raw_process]=ProcessRawDataCalibration(overwrite_flag,current_year,year,MODIS_vars,NCEP_vars,OMI_vars,store,MODIS_prefix,NCEP_prefix,OMI_prefix)
+function [MODIS_raw_process,NCEP_raw_process,OMI_raw_process,blended_raw_process]=ProcessRawDataCalibration(overwrite_flag,current_year,year,MODIS_vars,NCEP_vars,OMI_vars,blended_vars,store,MODIS_prefix,NCEP_prefix,OMI_prefix,blended_prefix)
 
 % if an overwrite is not requested
 if overwrite_flag==false
@@ -25,6 +25,7 @@ if overwrite_flag==false
         MODIS_raw_process=ones(1,length(MODIS_vars)).*2;
         NCEP_raw_process=ones(1,length(NCEP_vars)).*2;
         OMI_raw_process=ones(1,length(OMI_vars)).*2;
+        blended_raw_process=ones(1,length(blended_vars)).*2;
         
     else % else the year is in the past and so the store should be consulted to check for existance
         %% MODIS
@@ -51,7 +52,7 @@ if overwrite_flag==false
             else
                 filename=GetFilename(store,MODIS_vars{i},year,MODIS_prefix);
                 % check whether the file exists.
-                if ~exist(filename,'file')s
+                if ~exist(filename,'file')
                     %if the file doesnt exist, add a marker in the flag variable.
                     MODIS_raw_process(i)=1;
                 end
@@ -79,10 +80,24 @@ if overwrite_flag==false
                 OMI_raw_process(i)=1;
             end
         end
+        
+        %% Blended
+        %there are only two variables being blended. Ozone and Precipitable Water
+        blended_raw_process=zeros(1,length(blended_vars));
+        for i=1:length(blended_vars)
+            filename=GetFilename(store,blended_vars{i},year,blended_prefix);
+            % check whether the file exists.
+            if ~exist(filename,'file')
+                %if the file doesnt exist, add a marker in the flag variable.
+                blended_raw_process(i)=1;
+            end
+        end
+        
     end
 else
     MODIS_raw_process=ones(1,length(MODIS_vars));
     NCEP_raw_process=ones(1,length(NCEP_vars));
     OMI_raw_process=ones(1,length(OMI_vars));
+    blended_raw_process=ones(1,length(OMI_vars));
 end
 end

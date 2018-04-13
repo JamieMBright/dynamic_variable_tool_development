@@ -147,6 +147,27 @@ clearvars
 root_dir=pwd;
 addpath([root_dir,filesep,'support_scripts'])
 addpath([root_dir,filesep,'nctoolbox-master'])
+
+%% Set time requirements
+% A fundamental component to the main function is the year that is
+% required. The output format of each of the listed output variables is a
+% 3D matrix of longitude*latitude*time for a whole year.
+% years=2002:2018;
+y1=input('Start year: ');
+y2=input('End years: ');
+years=y1:y2;
+
+%% Specify the overwrite flag
+% The yearly variable files will be overwritten if the flag is set to true,
+% should the flag be false, the tool will skip this year and variable, with
+% the exception of the current year, whereby new data will be checked for.
+overwrite_flag=input('Overwrite? (true/false): ');
+current_year=year(now);
+
+%% Setup the jave based netcdf toolbox
+% NOTE: this is not the author's work, see the documentation in
+% nctoolbox-master for more information:
+% Copyright 2013 B.Schlining, A.Crosby, R.Signell
 setup_nctoolbox
 
 %% Define the directories
@@ -189,21 +210,6 @@ NCEP_prefix='NCEP';
 OMI_prefix='OMI';
 blended_prefix='blended';
 
-%% Set time requirements
-% A fundamental component to the main function is the year that is
-% required. The output format of each of the listed output variables is a
-% 3D matrix of longitude*latitude*time for a whole year.
-% years=2002:2018;
-y1=input('Start year: ');
-y2=input('End years: ');
-years=y1:y2;
-
-%% Specify the overwrite flag
-% The yearly variable files will be overwritten if the flag is set to true,
-% should the flag be false, the tool will skip this year and variable, with
-% the exception of the current year, whereby new data will be checked for.
-overwrite_flag=input('Overwrite? (true/false): ');
-current_year=year(now);
 
 %% Trigger the main part of the function
 % This function loops through each of the raw data from the satellite and

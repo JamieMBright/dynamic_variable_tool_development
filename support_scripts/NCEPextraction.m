@@ -17,10 +17,10 @@ lon_real=(-179.5:179.5)';
 
 %loop through each variable to be extracted from NCEP
 for var=1:length(NCEP_vars)
-    disp(['Processing NCEP: ',NCEP_vars{var},' for ',num2str(years(y))])
     % check whether this variable must be performed
     if NCEP_raw_process(var)==1
-        
+        % report to console
+        disp(['Processing NCEP: ',NCEP_vars{var},' for ',num2str(years(y))])
         %define the filepath
         filepath=[store.NCEP_store,NCEP_vars{var},filesep,NCEP_var_root{var},num2str(years(y)),'.nc'];
         

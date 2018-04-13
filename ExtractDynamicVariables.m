@@ -62,8 +62,8 @@
 function dynamic_variables_struct=ExtractDynamicVariables(latitudes,longitudes,time_series,dynamic_variables_store,extraction_variables)
 try
 % safety checks
-list_of_variables={'angstrom_exponent_b1','angstrom_exponent_b2','angstrom_turbidity_b1','angstrom_turbidity_b2','nitrogen_dioxide','ozone','precipitable_water','pressure','relative_humidity','temperature_2m'};
-raw_data_source_prefixes={'MODIS','MODIS','MODIS','MODIS','OMI','blended','blended','NCEP','NCEP','NCEP'};
+list_of_variables={'angstrom_exponent_b1','angstrom_exponent_b2','angstrom_turbidity_b1','angstrom_turbidity_b2','nitrogen_dioxide','ozone','precipitable_water','pressure','relative_humidity','temperature_2m','AOD700'};
+raw_data_source_prefixes={'MODIS','MODIS','MODIS','MODIS','OMI','blended','blended','NCEP','NCEP','NCEP','MODIS'};
 
 if ~exist('extraction_variables','var')
     extraction_variables=list_of_variables;
@@ -164,11 +164,12 @@ for var=1:length(extraction_variables)
             %supress NaN warnings by wrapping inside an evalc
             data_for_interp=squeeze(data(row_ind(loc),col_ind(loc),:));
             nan_inds=isnan(data_for_interp);
+            nan_inds_interp=round(interp1(time,single(nan_inds),this_years_times,'pchip'));
             % there must be at least 2 datapoints to perform an interp
             if sum(nan_inds)+2<length(data_for_interp) 
             evalc('var_data(:,loc)=interp1(time,data_for_interp,this_years_times,''pchip'');');
             end
-            var_data(nan_inds==1,loc)=NaN;
+            var_data(nan_inds_interp==1,loc)=NaN;
         end
         
         % populate the output struct

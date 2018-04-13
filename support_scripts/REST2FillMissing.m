@@ -60,11 +60,19 @@ if nansum(nansum(nansum(isnan(data_main))))>=1
             % IDW weightings
             weighting=1./(dis.^1.4);
             nan_fill=data(data_notnan_inds(nearest_inds));
+            % nan_fill orientates itself badly when only one row of nearest
+            % inds.
+            if size(nearest_inds,1)==1
+            nan_fill=nan_fill';
+            end
+            
             % apply IDW
+            % in instances where only a single nan_ind exists, 
             missing_data=nansum(nan_fill.*weighting,2)./nansum(weighting,2);
             data_raw=data;
             data_filled=data_raw;
             data_filled(data_nan_inds)=missing_data;
+                 
             if (plot_flag==true && i==1)
                 data_step_2=data_filled;
             end

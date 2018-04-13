@@ -1,4 +1,4 @@
-### dynamic_variable_tool_development
+# dynamic_variable_tool_development
 This tool is a method to gather raw satellite and renalysis data and 
 convert it into easy to use spatio-temporal variables with intended use 
 in solar clear-sky irradiance modelling.
@@ -52,7 +52,7 @@ Solar Energy. xx pp xxx-xxx.
 
 ## Where to download?
 
-# MODIS
+### MODIS
 MODIS Aqua and Terra images can be obtaind from the ladsweb ftp and http
 server. A programatic approach is to use the DownloadWithWget.m function
 provided in the utility functions.
@@ -66,7 +66,7 @@ This is difficult to programatically download due to the
 non-predictability of the url end. An FTP connection is ideal. This tool
 assumes the native file structure of the MOD08_D3 and MYD08_D3 setup.
 
-# NCEP
+### NCEP
 NCEP has the simplest file structure and the download capability is
 provided programatically within this tool. Firstly, however, cygwin must
 be installed and activating the web wget options on install and then
@@ -89,7 +89,7 @@ called "pwat-yyyy.nc", "rh3-yyyy.nc", "pres.sfc.yyyy.nc" and
 DownloadAllReanalysisData.m script not be utilised.
 This can be modified, however, would require some debugging.
 
-# OMI
+### OMI
 The OMI data can be programatically downloaded using the cygwin and wget
 operability as mentioned before. Firstly, however, the user must register
 with the NNASA GES DISC https://disc.gsfc.nasa.gov/data-access to obtain

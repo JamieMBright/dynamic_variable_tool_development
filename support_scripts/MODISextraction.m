@@ -72,6 +72,18 @@ for var=1:length(MODIS_vars)
             
             % extract the data from MODIS using the date and the datafields
             [data,latitudes_HDF,longitudes_HDF,~,~]=loadHDFEOS(datestr_yyyymmdd,MODIS_datafields,store.MODIS_store);
+            
+            %persist the latitudes and longitudes to a separate varaible
+            %for saving. This is because, should the last d iteration fail,
+            %there is no data in latitudes_ or longitudes_HDF to store, and
+            %therefore, an empty variable will be saved\
+            if (~exist('longitudes_for_save','var') && ~isempty(longitudes_HDF))
+                longitudes_for_save=longitudes_HDF;
+            end
+            if (~exist('latitudes_for_save','var') && ~isempty(latitudes_HDF))
+                latitudes_for_save=latitudes_HDF;
+            end
+            
             %% Gap filling
             % Gap filling is performed first over land, and then over sea. A land mask
             % is loaded first for indications of where the land is.
@@ -168,9 +180,9 @@ for var=1:length(MODIS_vars)
             save(filename,'time_dayvecs','-v7.3');
             % save the one time latitudes and longitudes
             filename=GetFilename(store,save_str{s},years(y),MODIS_prefix,'latitudes');
-            save(filename,'latitudes_HDF','-v7.3');
+            save(filename,'latitudes_for_save','-v7.3');
             filename=GetFilename(store,save_str{s},years(y),MODIS_prefix,'longitudes');
-            save(filename,'longitudes_HDF','-v7.3');
+            save(filename,'longitudes_for_save','-v7.3');
             
             if y==(length(years)-1)
                 % Make a gif of a single year

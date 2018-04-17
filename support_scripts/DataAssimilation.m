@@ -8,7 +8,7 @@
 
 function DataAssimilation(store,raw_data_source_var,year,prefix_1,prefix_2,blended_prefix,weight_1,weight_2)
 disp(['Assimilating ',num2str(year),' data for ',raw_data_source_var,' between ',prefix_1,' and ',prefix_2])
-
+try
 if (~exist('weight_1','var') || ~exist('weight_2','var'))
     weight_1=0.5;
     weight_2=0.5;
@@ -254,6 +254,8 @@ else
     
     
 end
-
+catch err
+   getReport(err,'extended')
+end
 
 end

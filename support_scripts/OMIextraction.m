@@ -1,6 +1,6 @@
 function OMIextraction(OMI_vars,OMI_raw_process,OMI_prefix,years,y,store)
 % Help to open the OMI type data was found at
-% https://disc.gsfc.nasa.gov/datasets/OMSO2G_V003/summary
+% https://disc.gsfc.nasa.gov/datasets/OMDOA03_V003/summary
 % https://acdisc.gsfc.nasa.gov/data/Aura_OMI_Level3/OMDOAO3e.003/2004/OMI-Aura_L3-OMDOAO3e_2004m1001_v003-2011m1109t084506.he5
 
 
@@ -123,7 +123,9 @@ for var=1:length(OMI_vars)
                 
                 data_confidence=zeros(size(data));
                 data_confidence(~isnan(data))=1;
-                data=REST2FillMissing(land_mask,lons,lats,data);
+                % The latest decision is to NOT fill the gaps for Nitrogen.
+                % This way, there are no errors from filling missing data.
+%                 data=REST2FillMissing(land_mask,lons,lats,data);
                 
                 % apply REST2 limmitations of 0<u_n<0.03 atm-cm
                 data(data<c_lower(var))=c_lower(var);

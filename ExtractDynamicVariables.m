@@ -60,8 +60,8 @@
 
 function dynamic_variables_struct=ExtractDynamicVariables(latitudes,longitudes,time_series,dynamic_variables_store,extraction_variables)
 % safety checks
-list_of_variables={'angstrom_exponent_b1','angstrom_exponent_b2','angstrom_turbidity_b1','angstrom_turbidity_b2','nitrogen_dioxide','ozone','precipitable_water','pressure','relative_humidity','temperature_2m','AOD700'};
-raw_data_source_prefixes={'MODIS','MODIS','MODIS','MODIS','OMI','blended','blended','NCEP','NCEP','NCEP','MODIS'};
+list_of_variables={'angstrom_exponent_b1','angstrom_exponent_b2','angstrom_turbidity_b1','angstrom_turbidity_b2','nitrogen_dioxide','ozone','precipitable_water','pressure','relative_humidity','temperature_2m','AOD700','albedo'};
+raw_data_source_prefixes={'MODIS','MODIS','MODIS','MODIS','OMI','blended','blended','NCEP','NCEP','NCEP','MODIS',''};
 
 if ~exist('extraction_variables','var')
     extraction_variables=list_of_variables;
